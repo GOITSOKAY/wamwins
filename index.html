@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>WAMWins Trades Demo</title>
+<meta name="description" content="WAMWins Trades demo: ICT Library workflow, dispatch, van inventory, Loxone monitoring and cost comparison, with sample data.">
+<meta name="theme-color" content="#0B49D1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WAMWins Trades">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+@font-face { font-family: "Poppins"; src: url("fonts/Poppins-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap }
+@font-face { font-family: "Poppins"; src: url("fonts/Poppins-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap }
+@font-face { font-family: "Poppins"; src: url("fonts/Poppins-Bold.ttf") format("truetype"); font-weight: 600 700; font-display: swap }
+/* Layout: brand-blue rail of modules on the left (top tab strip on phones), working canvas on a cool light-gray ground.
+   Red is reserved for alerts, notifications and (i) buttons; yellow marks the one primary action per view. */
+:root {
+  --blue: #0B49D1; --blue-ink: #0A3FB4; --blue-soft: #E7EEFC; --yellow: #FFC107; --yellow-soft: #FFF4CF;
+  --red: #D32F2F; --red-strong: #C62828; --red-soft: #FDECEC; --ok: #13795B; --ok-soft: #E3F4EC; --warn: #9A6400; --warn-soft: #FFF3D6;
+  --bg: #F3F6FB; --surface: #FFFFFF; --surface-2: #E8EEF7; --line: #D6DEEB; --ink: #0E1B3D; --ink-2: #4A5878; --ink-3: #6B7898;
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --r: 12px; --r-s: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --blue: #6F9BFF; --blue-ink: #9BB9FF; --blue-soft: #16264A; --yellow: #FFC94A; --yellow-soft: #3A3010;
+  --red: #FF8A80; --red-strong: #C62828; --red-soft: #3B1416; --ok: #6FDBB3; --ok-soft: #0E3327; --warn: #F2C46B; --warn-soft: #3A2C0E;
+  --bg: #0C1324; --surface: #121C33; --surface-2: #1A2642; --line: #26355A; --ink: #EAF0FF; --ink-2: #B4C1DE; --ink-3: #8E9BBB; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --blue: #6F9BFF; --blue-ink: #9BB9FF; --blue-soft: #16264A; --yellow: #FFC94A; --yellow-soft: #3A3010;
+  --red: #FF8A80; --red-strong: #C62828; --red-soft: #3B1416; --ok: #6FDBB3; --ok-soft: #0E3327; --warn: #F2C46B; --warn-soft: #3A2C0E;
+  --bg: #0C1324; --surface: #121C33; --surface-2: #1A2642; --line: #26355A; --ink: #EAF0FF; --ink-2: #B4C1DE; --ink-3: #8E9BBB; color-scheme: dark }
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { margin: 0 } img { max-width: 100% }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px) }
+html, body { height: 100% }
+body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font); font-variant-numeric: tabular-nums }
+button, input, select { font: inherit; color: inherit }
+button { cursor: pointer }
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px }
+.main:focus, .main:focus-visible { outline: none }
+h1, h2, h3 { margin: 0; line-height: 1.25; text-wrap: balance }
+h1 { font-size: 24px; font-weight: 700 } h2 { font-size: 17px; font-weight: 600 } h3 { font-size: 15px; font-weight: 600 }
+p { margin: 0 }
+.app { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100% }
+.rail { background: #0B49D1; color: #fff; padding: 20px 14px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 0; height: 100vh; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 6px }
+.brand img { width: 40px; height: 40px; border-radius: 10px }
+.brand b { font-size: 17px; letter-spacing: .2px } .brand b span { color: #FFC107 }
+.brand small { display: block; font-size: 11px; opacity: .8; letter-spacing: .6px; text-transform: uppercase }
+.nav { display: flex; flex-direction: column; gap: 4px }
+.nav a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: #DCE6FF; text-decoration: none; font-weight: 500; white-space: nowrap }
+.nav a svg { width: 18px; height: 18px; flex: none }
+.nav a:hover { background: rgba(255,255,255,.08); color: #fff }
+.nav a[aria-current="page"] { background: #fff; color: #0B49D1 }
+.nav a .count { margin-left: auto; background: #D32F2F; color: #fff; font-size: 11px; border-radius: 999px; padding: 0 7px; line-height: 18px }
+.rail-foot { margin-top: auto; font-size: 11.5px; color: #C9D7FF; line-height: 1.5; padding: 0 6px }
+.main { padding-block: 22px 60px; padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); min-width: 0 }
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 18px }
+.topbar .clock { margin-left: auto; color: var(--ink-2); font-size: 13px }
+.demo-chip { background: var(--yellow-soft); color: var(--warn); border: 1px solid var(--yellow); font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 10px }
+.lead { color: var(--ink-2); max-width: 70ch; margin-top: 4px }
+.grid { display: grid; gap: 16px }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)) } .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)) }
+.g-side { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; min-width: 0 }
+.panel-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px }
+.panel-head .sub { color: var(--ink-3); font-size: 12.5px; margin-left: auto }
+.info { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--red); color: var(--red); background: transparent; display: inline-grid; place-items: center; font: 700 12px/1 Georgia, serif; flex: none }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; text-align: left; display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: inherit }
+.kpi:hover { border-color: var(--blue) }
+.kpi .v { font-size: 26px; font-weight: 700 } .kpi .l { color: var(--ink-2); font-size: 12.5px }
+.kpi.alert { border-left: 4px solid var(--red) } .kpi.alert .v { color: var(--red) }
+.kpi .note { font-size: 11.5px; color: var(--ink-3) }
+.btn { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 16px; font-weight: 500; min-height: 40px; display: inline-flex; align-items: center; gap: 6px; justify-content: center }
+.btn:hover { border-color: var(--blue) }
+.btn.primary { background: var(--yellow); border-color: var(--yellow); color: #0E1B3D; font-weight: 600 }
+.btn.blue { background: var(--blue); border-color: var(--blue); color: #fff }
+.btn.danger { border-color: var(--red); color: var(--red) }
+.btn.sm { min-height: 32px; padding: 4px 12px; font-size: 13px }
+.btn[disabled] { opacity: .5; cursor: not-allowed }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; border-radius: 999px; padding: 2px 10px; white-space: nowrap; background: var(--surface-2); color: var(--ink-2) }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor }
+.pill.ok { background: var(--ok-soft); color: var(--ok) } .pill.warn { background: var(--warn-soft); color: var(--warn) }
+.pill.bad { background: var(--red-soft); color: var(--red) } .pill.info-p { background: var(--blue-soft); color: var(--blue) }
+.pill.plain::before { display: none }
+.table-wrap { overflow-x: auto; margin: 0 -4px }
+table { width: 100%; border-collapse: collapse; font-size: 13px }
+th { text-align: left; color: var(--ink-3); font-weight: 500; font-size: 12px; padding: 8px 6px; border-bottom: 1px solid var(--line); white-space: nowrap }
+td { padding: 9px 6px; border-bottom: 1px solid var(--line); vertical-align: middle }
+tr:last-child td { border-bottom: 0 }
+td.num, th.num { text-align: right }
+tr.sel td { background: var(--blue-soft) }
+tbody tr.click { cursor: pointer } tbody tr.click:hover td { background: var(--surface-2) }
+.muted { color: var(--ink-3) } .small { font-size: 12.5px }
+.list { display: flex; flex-direction: column; gap: 8px }
+.item { border: 1px solid var(--line); border-radius: var(--r-s); padding: 10px 12px; background: var(--surface); text-align: left; display: flex; flex-direction: column; gap: 4px; width: 100% }
+button.item:hover { border-color: var(--blue) }
+.item.sel { border-color: var(--blue); box-shadow: inset 3px 0 0 var(--blue) }
+.item .top { display: flex; gap: 8px; align-items: center; justify-content: space-between }
+/* workflow stepper */
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column }
+.steps li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; position: relative; padding-bottom: 12px }
+.steps li::before { content: ""; position: absolute; left: 12px; top: 26px; bottom: 0; width: 2px; background: var(--line) }
+.steps li:last-child::before { display: none }
+.dot { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: var(--surface-2); color: var(--ink-3); border: 2px solid var(--line); z-index: 1 }
+.steps li.done .dot { background: var(--blue); border-color: var(--blue); color: #fff }
+.steps li.now .dot { background: var(--yellow); border-color: var(--yellow); color: #0E1B3D }
+.steps li.done::before { background: var(--blue) }
+.steps .lbl { font-weight: 500 } .steps li.todo .lbl { color: var(--ink-3) }
+.steps .meta { font-size: 12px; color: var(--ink-3) }
+.steps .added { font-size: 10.5px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--blue); margin-left: 6px }
+.formcard { border: 1px dashed var(--blue); background: var(--blue-soft); border-radius: var(--r-s); padding: 12px; display: grid; gap: 8px }
+.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; font-size: 13px }
+.kv dt { color: var(--ink-3) } .kv dd { margin: 0 }
+/* dispatch board */
+.board { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface) }
+.board-inner { min-width: 780px }
+.b-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); border-bottom: 1px solid var(--line); min-height: 58px }
+.b-row:last-child { border-bottom: 0 }
+.b-name { padding: 8px 10px; border-right: 1px solid var(--line); font-size: 12.5px; display: flex; flex-direction: column; justify-content: center }
+.b-name b { font-size: 13px; font-weight: 600 }
+.b-track { position: relative; background-image: linear-gradient(to right, var(--line) 1px, transparent 1px); background-size: calc(100% / 11) 100% }
+.b-head .b-track { display: grid; grid-template-columns: repeat(11, 1fr); background: none; font-size: 11.5px; color: var(--ink-3) }
+.b-head .b-track span { padding: 8px 4px; border-left: 1px solid var(--line) }
+.blk { position: absolute; top: 7px; bottom: 7px; border-radius: 8px; padding: 3px 7px; font-size: 11.5px; line-height: 1.3; overflow: hidden; background: var(--blue-soft); border: 1.5px solid var(--blue); color: var(--ink) }
+.blk b { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.blk.done { opacity: .55 } .blk.urgent { border-color: var(--red); background: var(--red-soft) } .blk.new { border-color: var(--yellow); background: var(--yellow-soft); border-width: 2px }
+.nowline { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--red); z-index: 2 }
+.score { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center }
+.bar { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden } .bar i { display: block; height: 100%; background: var(--blue) }
+/* monitoring */
+.cam { aspect-ratio: 16/9; max-width: 100%; border-radius: var(--r-s); background: #0A1022; position: relative; overflow: hidden }
+.cam canvas { width: 100%; height: 100%; display: block }
+.cam .live { position: absolute; top: 10px; left: 10px; background: #C62828; color: #fff; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 2px 7px }
+.cam .ovl { position: absolute; left: 10px; right: 10px; bottom: 10px; color: #E6ECFF; font-size: 12px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap }
+.alarm { border: 2px solid var(--red); background: var(--red-soft); border-radius: var(--r); padding: 14px; display: grid; gap: 10px }
+.alarm h3 { color: var(--red) }
+.chan { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px }
+.chan div { background: var(--surface); border-radius: var(--r-s); padding: 8px 10px; font-size: 12.5px; border: 1px solid var(--line) }
+svg text { font-family: var(--font) }
+/* cost */
+.inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px }
+.field { display: grid; gap: 4px } .field label { font-size: 12.5px; color: var(--ink-2); font-weight: 500 }
+.field output { font-weight: 600 }
+input[type="range"] { width: 100%; accent-color: #0B49D1 }
+select, input[type="number"] { border: 1.5px solid var(--line); background: var(--surface); border-radius: var(--r-s); padding: 8px 10px; min-height: 40px; width: 100% }
+.saving { background: var(--ok-soft); color: var(--ok); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 2px }
+.saving b { font-size: 24px }
+.src { font-size: 12px; color: var(--ink-3) } .src a { color: var(--blue) }
+/* toast + modal */
+.toasts { position: fixed; z-index: 50; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; width: min(92vw, 440px); pointer-events: none }
+.toast { background: #C62828; color: #fff; border-radius: var(--r-s); padding: 11px 14px; font-weight: 500; box-shadow: 0 10px 28px rgba(198,40,40,.3); pointer-events: auto }
+.modal-back { position: fixed; inset: 0; background: rgba(8,14,32,.55); z-index: 60; display: grid; place-items: center; padding: 16px }
+.modal { background: var(--surface); border-radius: var(--r); max-width: 460px; width: 100%; padding: 20px; display: grid; gap: 12px; border-top: 4px solid var(--red) }
+.section-gap { display: grid; gap: 16px }
+@media (max-width: 1080px) { .g3 { grid-template-columns: repeat(2, minmax(0, 1fr)) } .g-side { grid-template-columns: minmax(0, 1fr) } }
+@media (max-width: 820px) {
+  .app { grid-template-columns: minmax(0, 1fr) }
+  .rail { position: sticky; top: env(safe-area-inset-top, 0px); height: auto; z-index: 20; padding: 10px max(12px, env(safe-area-inset-left, 0px)) 8px max(12px, env(safe-area-inset-right, 0px)); gap: 8px }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #0B49D1 }
+  .brand img { width: 32px; height: 32px }
+  .nav { flex-direction: row; overflow-x: auto; scrollbar-width: none } .nav::-webkit-scrollbar { display: none }
+  .nav a { padding: 8px 12px }
+  .rail-foot { display: none }
+  .main { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+  .g2, .g3 { grid-template-columns: minmax(0, 1fr) }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" aria-label="WAMWins modules">
+    <div class="brand"><img src="data:image/png;base64,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" alt=""><div><b>WAM<span>Wins</span></b><small>Trades demo</small></div></div>
+    <nav class="nav" id="nav" aria-label="Sections"></nav>
+    <p class="rail-foot">Sample data for the Cassidy proposal. Nothing here is connected to real customers, vans or sensors.</p>
+  </aside>
+  <main class="main" id="main" tabindex="-1">
+    <div class="topbar"><span class="demo-chip">Demo · sample data</span><button class="btn primary sm" type="button" id="install" hidden>Install app</button><span class="clock" id="clock"></span></div>
+    <div id="view"></div>
+  </main>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+// ============================================================ sample data
+const RATE = { laborCost: 48, overheadPct: 0.18 };           // per hour; overhead on materials + labor
+const NOW_MIN = 10 * 60 + 30;                                // the demo day runs at 10:30 AM
+const fmt$ = n => '$' + Math.round(n).toLocaleString('en-US');
+const hhmm = m => { const h = Math.floor(m / 60), mm = m % 60, ap = h >= 12 ? 'PM' : 'AM'; return `${((h + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${ap}`; };
+const el = id => document.getElementById(id);
+
+const TECHS = [
+  { id: 't1', name: 'Marco Diaz', skills: ['HVAC', 'Brazing'], van: 'V-101', zone: 'Riviera Beach' },
+  { id: 't2', name: 'Kayla Brooks', skills: ['HVAC'], van: 'V-102', zone: 'West Palm Beach' },
+  { id: 't3', name: 'Andre Pierce', skills: ['Plumbing'], van: 'V-103', zone: 'Palm Beach Gardens' },
+  { id: 't4', name: 'Lena Ortiz', skills: ['Plumbing', 'Leak detection'], van: 'V-104', zone: 'Jupiter' },
+  { id: 't5', name: 'Sam Whitaker', skills: ['Electrical', 'HVAC'], van: 'V-105', zone: 'Lake Worth' },
+  { id: 't6', name: 'Priya Nair', skills: ['Electronics', 'HVAC'], van: 'V-106', zone: 'Boca Raton' },
+];
+const DIST = { t1: 4, t2: 9, t3: 12, t4: 18, t5: 15, t6: 27 };    // miles to the sample jobs' area
+
+// Standard procedure (the six steps added to the brief's scenarios are flagged)
+const STEPS = [
+  { k: 'request',  label: 'Customer requests service', role: 'Customer / dispatcher', form: 'Service Request', s: 'ABCD' },
+  { k: 'dispatch', label: 'Schedule and dispatch technician', role: 'Dispatcher', form: 'Dispatch Ticket', s: 'ABCD', added: true },
+  { k: 'estimate', label: 'Assess and estimate from the price book', role: 'Technician', form: 'Site Assessment + Estimate', s: 'ABCD' },
+  { k: 'approve',  label: 'Customer approves the estimate', role: 'Customer', form: 'Estimate Approval', s: 'ABC', added: true },
+  { k: 'mreq',     label: 'Material request', role: 'Technician', form: 'Material Request', s: 'BC' },
+  { k: 'quotes',   label: 'Quotes above the threshold', role: 'Purchasing', form: 'Quote Comparison (Canvass)', s: 'BC' },
+  { k: 'budget',   label: 'Budget and approval by amount', role: 'Finance / approving authority', form: 'Budget and Approval Record', s: 'BC', gate: true },
+  { k: 'po',       label: 'Purchase order', role: 'Purchasing', form: 'Purchase Order', s: 'BC' },
+  { k: 'receive',  label: 'Receive and release to technician', role: 'Inventory', form: 'Receiving Report + Release Slip', s: 'BC' },
+  { k: 'match',    label: 'Supplier invoice: three-way match', role: 'Accounts payable', form: 'Supplier Invoice Match', s: 'BC', added: true },
+  { k: 'paysup',   label: 'Pay the supplier', role: 'Accounts payable', form: 'Supplier Payment Voucher', s: 'BC', added: true },
+  { k: 'permit',   label: 'Permit filed', role: 'Office', form: 'Permit Application', s: 'C', added: true },
+  { k: 'job',      label: 'Do the job; inspection if permitted', role: 'Technician', form: 'Job Order + Completion Report', s: 'ABCD', added: true },
+  { k: 'accept',   label: 'Customer accepts the work', role: 'Customer', form: 'User Acceptance Report', s: 'ABCD' },
+  { k: 'invoice',  label: 'Invoice and collect payment', role: 'Office / technician', form: 'Customer Invoice + Receipt', s: 'ABCD', added: true },
+];
+const SCEN = { A: 'Routine service call', B: 'Repair needing special parts', C: 'Equipment replacement', D: 'Maintenance agreement visit' };
+const stepsFor = sc => STEPS.filter(s => s.s.includes(sc));
+
+const RUNS = [
+  { id: 'J-24117', title: 'Condenser fan motor replacement', customer: 'Harbor Plaza Offices', sc: 'B', at: 'budget', tech: 't1',
+    mat: [['Condenser fan motor, 1/4 HP', 1, 286], ['Run capacitor 5 µF', 1, 14], ['Motor mount kit', 1, 22]], hours: 2.5, price: 1185,
+    log: [['8:02 AM', 'Service Request', 'Phone, no cooling on 3rd floor'], ['8:15 AM', 'Dispatch Ticket', 'Marco Diaz, V-101'], ['9:10 AM', 'Estimate', '$1,185 from price book'], ['9:24 AM', 'Estimate Approval', 'Signed by facility manager'], ['9:31 AM', 'Material Request', 'Motor not on van'], ['10:05 AM', 'Quote Comparison', '3 suppliers, Ferguson lowest']] },
+  { id: 'J-24120', title: '3-ton heat pump changeout', customer: 'Okafor residence', sc: 'C', at: 'permit', tech: 't2',
+    mat: [['3-ton heat pump system', 1, 4120], ['Line set 3/8 x 3/4, 25 ft', 1, 168], ['Pad, disconnect, whip', 1, 96], ['Brazing alloy 15%, nitrogen', 1, 38]], hours: 9, price: 8950,
+    log: [['Mon', 'Service Request', 'Old unit failing'], ['Mon', 'Estimate', 'Good / better / best, chose better'], ['Mon', 'Estimate Approval', 'Signed'], ['Tue', 'Quote Comparison', '3 distributors'], ['Tue', 'Approval', 'Over $2,500: approved by GM'], ['Wed', 'Purchase Order', 'PO-8812'], ['Thu', 'Receiving', 'Serials recorded'], ['Thu', 'Invoice match', 'Matched within tolerance'], ['Fri', 'Supplier paid', 'ACH']] },
+  { id: 'J-24122', title: 'No cooling: capacitor and contactor', customer: 'Lopez residence', sc: 'A', at: 'job', tech: 't5',
+    mat: [['Dual run capacitor 45/5 µF', 1, 24], ['Contactor 2-pole 30 A', 1, 19]], hours: 1.2, price: 465,
+    log: [['9:40 AM', 'Service Request', 'App booking'], ['9:45 AM', 'Dispatch Ticket', 'Sam Whitaker, V-105'], ['10:20 AM', 'Estimate', '$465 flat rate'], ['10:24 AM', 'Estimate Approval', 'Signed on phone']] },
+  { id: 'J-24125', title: 'Annual maintenance visit', customer: 'Bayview Condos, unit 4B', sc: 'D', at: 'estimate', tech: 't6',
+    mat: [['Filter 16x25x1', 2, 9], ['Condensate tablets', 1, 6]], hours: 1, price: 0,
+    log: [['7:00 AM', 'Service Request', 'Scheduled from maintenance agreement'], ['7:05 AM', 'Dispatch Ticket', 'Priya Nair, V-106']] },
+];
+const HISTORY = {   // past runs of the same scenario, for the comparison
+  B: [['J-23861', 'Condenser fan motor', 304, 2.4, 1185, 3.1], ['J-23790', 'Condenser fan motor', 331, 3.0, 1185, 4.6], ['J-23544', 'Blower motor', 412, 3.2, 1390, 2.2], ['J-23402', 'Condenser fan motor', 298, 2.2, 1150, 2.9]],
+  C: [['J-23912', '3-ton changeout', 4290, 9.5, 8950, 6], ['J-23710', '2.5-ton changeout', 3880, 8, 8200, 7], ['J-23488', '3-ton changeout', 4410, 10, 8800, 9]],
+  A: [['J-24001', 'Capacitor + contactor', 41, 1.1, 465, 0.2], ['J-23950', 'Capacitor', 26, 0.8, 325, 0.1], ['J-23877', 'Contactor', 21, 1.0, 340, 0.2]],
+  D: [['J-23998', 'Maintenance visit', 21, 1.0, 0, 0.1], ['J-23812', 'Maintenance visit', 24, 1.2, 0, 0.1]],
+};
+
+const BOARD = [   // today's scheduled jobs, minutes from midnight
+  { tech: 't1', s: 8 * 60, e: 9 * 60 + 30, t: 'Harbor Plaza · fan motor', st: 'done' },
+  { tech: 't1', s: 13 * 60, e: 15 * 60 + 30, t: 'Harbor Plaza · install motor' },
+  { tech: 't2', s: 7 * 60 + 30, e: 16 * 60 + 30, t: 'Okafor · heat pump changeout' },
+  { tech: 't3', s: 8 * 60, e: 10 * 60, t: 'Gomez · water heater', st: 'done' },
+  { tech: 't3', s: 11 * 60, e: 12 * 60 + 30, t: 'Shell Cove · drain line' },
+  { tech: 't4', s: 9 * 60, e: 11 * 60, t: 'Marina Tower · PEX inspection' },
+  { tech: 't5', s: 9 * 60 + 45, e: 11 * 60 + 15, t: 'Lopez · no cooling' },
+  { tech: 't5', s: 14 * 60, e: 15 * 60, t: 'Reyes · thermostat' },
+  { tech: 't6', s: 7 * 60, e: 8 * 60 + 30, t: 'Bayview 4B · maintenance', st: 'done' },
+  { tech: 't6', s: 12 * 60, e: 13 * 60 + 30, t: 'Bayview 7A · maintenance' },
+];
+const QUEUE = [
+  { id: 'Q-551', title: 'Water heater leaking', customer: 'Nguyen residence, Palm Beach Gardens', skill: 'Plumbing', part: 'T&P relief valve', mins: 90, pri: 'High' },
+  { id: 'Q-552', title: 'AC short-cycling', customer: 'Coral Dental, Riviera Beach', skill: 'HVAC', part: 'Dual run capacitor 45/5 µF', mins: 75, pri: 'Normal' },
+  { id: 'Q-553', title: 'Breaker trips on AC start', customer: 'Hale residence, Lake Worth', skill: 'Electrical', part: 'Hard start kit', mins: 60, pri: 'Normal' },
+];
+
+const VAN_ITEMS = [
+  // item, sku, tagged by
+  ['Dual run capacitor 45/5 µF', 'CAP-4505', 'Pack tag'], ['Contactor 2-pole 30 A', 'CON-230', 'Pack tag'], ['Hard start kit', 'HSK-01', 'Item tag'],
+  ['T&P relief valve 3/4"', 'TPV-34', 'Item tag'], ['PEX-A pipe 3/4", 10 ft', 'PEX-3410', 'Bin tag'], ['Brazing alloy 15%, 1 lb', 'BRZ-15', 'Pack tag'],
+  ['Nitrogen cylinder 40 cf', 'NIT-40', 'Item tag'], ['R-410A cylinder 25 lb', 'REF-410', 'Item tag'], ['Digital micron gauge', 'TL-MIC', 'Tool tag'], ['Vacuum pump 6 CFM', 'TL-VP6', 'Tool tag'],
+];
+const VANS = TECHS.map((t, i) => ({
+  id: t.van, tech: t.id, status: i === 0 ? 'review' : i === 3 ? 'review' : 'ok', reconciled: false,
+  stock: VAN_ITEMS.map((it, j) => ({ name: it[0], sku: it[1], tag: it[2], qty: Math.max(0, ((i * 7 + j * 3) % 6) + (j > 6 ? -3 : 0)), min: j > 6 ? 1 : 2, age: (i * 13 + j * 17) % 120 }))
+    .map(s => ({ ...s, qty: Math.max(s.tag === 'Tool tag' ? 1 : 0, s.qty) })),
+  events: [],
+}));
+VANS[0].events = [
+  { t: '8:41 AM', item: 'Contactor 2-pole 30 A', rfid: 'Pack count 6 → 5', cam: 'Hand removal seen', pr: 'J-24117 pull', res: 'ok' },
+  { t: '9:12 AM', item: 'Brazing alloy 15%, 1 lb', rfid: 'Pack tag left container', cam: 'Removal seen', pr: 'None open', res: 'review' },
+  { t: '9:55 AM', item: 'Digital micron gauge', rfid: 'Tool tag back in', cam: 'Return seen', pr: 'Tool return', res: 'ok' },
+];
+VANS[3].events = [
+  { t: '9:03 AM', item: 'PEX-A pipe 3/4", 10 ft', rfid: 'No change', cam: '2 lengths taken', pr: 'Marina Tower pull (1)', res: 'review' },
+  { t: '9:20 AM', item: 'T&P relief valve 3/4"', rfid: 'Item tag left', cam: 'Removal seen', pr: 'Q-551 pull', res: 'ok' },
+];
+VANS[0].stock[0].qty = 3; VANS[2].stock[3].qty = 2;   // sample: the nearby techs carry the parts their usual calls need
+VANS.forEach((v, i) => { if (!v.events.length) v.events = [{ t: '8:1' + i + ' AM', item: v.stock[1].name, rfid: 'Pack count down 1', cam: 'Removal seen', pr: 'Job pull', res: 'ok' }]; });
+
+const SITES = [
+  { id: 's1', name: 'Harbor Plaza Offices', kind: 'Commercial PEX + HVAC', ctl: 'Loxone Miniserver', status: 'ok',
+    sensors: [['Main supply pressure', '62 psi', 'ok'], ['Flow (no-use hours)', '0.0 gpm', 'ok'], ['Leak sensor, 3rd floor riser', 'Dry', 'ok'], ['Smart valve, main', 'Open', 'ok'], ['RTU-2 supply air', '55.8 °F', 'ok']] },
+  { id: 's2', name: 'Marina Tower', kind: 'Commercial PEX', ctl: 'Loxone Miniserver', status: 'ok',
+    sensors: [['Main supply pressure', '58 psi', 'ok'], ['Manifold 7, return temp', '118 °F', 'ok'], ['Leak sensor, mech room', 'Dry', 'ok']] },
+  { id: 's3', name: 'Coral Dental', kind: 'HVAC', ctl: 'Loxone Miniserver', status: 'warn',
+    sensors: [['AHU-1 compressor starts/hour', '9', 'warn'], ['Supply air', '61.2 °F', 'warn'], ['Filter differential', '0.42 in wc', 'ok']] },
+];
+const STATE = { route: 'dashboard', run: 'J-24117', van: 'V-101', site: 's1', qsel: null, incidents: [], alertsSent: 0,
+  braze: { min: 0, readings: [], session: 'J-24120 · Okafor heat pump changeout', tech: 'Kayla Brooks', checks: { n2: 'ok', press: 'ok', vac: 'run', leak: 'todo', mat: 'ok' }, alerts: [] } };
+const evac = m => Math.round(2400 * Math.exp(-m / 4.2) + 180 + (m > 14 ? (m - 14) * 6 : 0));   // micron reading after m minutes (decay test from minute 14)
+for (let m = 0; m <= 6; m++) STATE.braze.readings.push(evac(m)); STATE.braze.min = 6;
+
+// ============================================================ helpers
+const pill = (cls, txt) => `<span class="pill ${cls}">${txt}</span>`;
+const info = (title, body) => `<button class="info" type="button" aria-label="More information: ${title}" data-info-title="${title}" data-info-body="${body.replace(/"/g, '&quot;')}">i</button>`;
+function toast(msg) {
+  const box = el('toasts'), t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; box.append(t); while (box.children.length > 3) box.firstChild.remove(); setTimeout(() => t.remove(), 4200);
+}
+function modal(title, body) {
+  const back = document.createElement('div'); back.className = 'modal-back';
+  back.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt"></h2><p class="lead"></p><div class="row" style="justify-content:flex-end"><button class="btn primary" type="button">Got it</button></div></div>`;
+  back.querySelector('h2').textContent = title; back.querySelector('p').textContent = body;
+  const prev = document.activeElement, ok = back.querySelector('button');
+  const close = () => { back.remove(); prev?.focus(); };
+  ok.onclick = close; back.addEventListener('click', e => { if (e.target === back) close(); });
+  back.addEventListener('keydown', e => { if (e.key === 'Escape') close(); if (e.key === 'Tab') { e.preventDefault(); ok.focus(); } });
+  document.body.append(back); ok.focus();
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-info-title]'); if (b) modal(b.dataset.infoTitle, b.dataset.infoBody); });
+const runCost = r => { const m = r.mat.reduce((s, x) => s + x[1] * x[2], 0), l = r.hours * RATE.laborCost, o = (m + l) * RATE.overheadPct; return { m, l, o, total: m + l + o }; };
+const reviewCount = () => VANS.reduce((n, v) => n + v.events.filter(e => e.res === 'review').length, 0);
+const openInc = () => STATE.incidents.filter(i => i.status !== 'closed').length;
+
+// ============================================================ navigation
+const ICON = {
+  dashboard: '<path d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z"/>',
+  library: '<path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/>',
+  dispatch: '<path d="M3 17h2l1-5h9l1 5h2M7 17a2 2 0 1 0 4 0M13 17a2 2 0 1 0 4 0M8 12V7h6l3 5"/>',
+  warehouse: '<path d="M3 21V8l9-5 9 5v13M7 21v-8h10v8M7 17h10"/>',
+  inventory: '<path d="M3 7l9-4 9 4-9 4zM3 7v10l9 4 9-4V7M12 11v10"/>',
+  monitoring: '<path d="M3 12h4l2-6 4 12 2-6h6"/>',
+  cost: '<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+};
+const ROUTES = [['dashboard', 'Central dashboard'], ['library', 'ICT Library'], ['dispatch', 'Dispatch'], ['warehouse', 'Warehouse'], ['inventory', 'Van inventory'], ['monitoring', 'Monitoring'], ['cost', 'Cost vs ServiceTitan']];
+function renderNav() {
+  const badge = { dispatch: QUEUE.length, warehouse: whLow().length + whReview(), inventory: reviewCount(), monitoring: openInc() };
+  el('nav').innerHTML = ROUTES.map(([k, l]) => `<a href="#${k}" ${STATE.route === k ? 'aria-current="page"' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>${l}${badge[k] ? `<span class="count" aria-label="${badge[k]} need attention">${badge[k]}</span>` : ''}</a>`).join('');
+}
+function go() {
+  const r = (location.hash || '#dashboard').slice(1);
+  STATE.route = ROUTES.some(x => x[0] === r) ? r : 'dashboard';
+  renderNav(); VIEWS[STATE.route](); el('main').focus({ preventScroll: true }); window.scrollTo(0, 0);
+  el('nav').querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+}
+el('clock').textContent = 'Friday, Nov 13, 2026 · ' + hhmm(NOW_MIN) + ' (demo time)';
+
+// ============================================================ views
+const VIEWS = {};
+const view = html => { el('view').innerHTML = html; };
+
+VIEWS.dashboard = () => {
+  const counts = {}; RUNS.forEach(r => { counts[r.at] = (counts[r.at] || 0) + 1; });
+  const pipe = ['estimate', 'approve', 'quotes', 'budget', 'receive', 'permit', 'job', 'invoice'];
+  const allRev = RUNS.reduce((s, r) => s + r.price, 0) + 18420;
+  view(`
+  <h1>Central dashboard</h1><p class="lead">One view over the ICT Library, dispatch, inventory and monitoring. Every number opens the records behind it.</p>
+  <div class="kpis" style="margin-top:16px">
+    <a class="kpi" href="#dispatch"><span class="v">${BOARD.length}</span><span class="l">Jobs scheduled today</span><span class="note">${QUEUE.length} waiting to be dispatched</span></a>
+    <a class="kpi" href="#library"><span class="v">${RUNS.filter(r => ['approve', 'budget'].includes(r.at)).length}</span><span class="l">Requests waiting for approval</span><span class="note">Budget and estimate approvals</span></a>
+    <a class="kpi ${openInc() ? 'alert' : ''}" href="#monitoring"><span class="v">${openInc()}</span><span class="l">Open Loxone incidents</span><span class="note">${openInc() ? 'Alarm sent by app, email, SMS' : 'All monitored sites normal'}</span></a>
+    <a class="kpi ${reviewCount() ? 'alert' : ''}" href="#inventory"><span class="v">${reviewCount()}</span><span class="l">Inventory movements to review</span><span class="note">RFID and camera disagree</span></a>
+    <a class="kpi ${whLow().length ? 'alert' : ''}" href="#warehouse"><span class="v">${whLow().length}</span><span class="l">Warehouse items below minimum</span><span class="note">${fmt$(WH.items.reduce((t, i) => t + i.qty * i.cost, 0))} stock on hand</span></a>
+    <a class="kpi" href="#dispatch"><span class="v">38 min</span><span class="l">Avg dispatch to arrival</span><span class="note">This week, sample data</span></a>
+    <a class="kpi" href="#library"><span class="v">${fmt$(allRev)}</span><span class="l">Work sold this week</span><span class="note">Sample data</span></a>
+  </div>
+  <div class="grid g-side" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>Where requests are in the standard procedure</h2>${info('Workflow pipeline', 'Each request is one run of the standard procedure. The bar shows how many runs sit at each step right now, so a slow step stands out.')}</div>
+      <div class="list">${pipe.map(k => { const s = STEPS.find(x => x.k === k), n = counts[k] || 0; return `<div class="score"><div><div class="small">${s.label}</div><div class="bar"><i style="width:${n * 30}%"></i></div></div><b>${n}</b></div>`; }).join('')}</div></section>
+    <section class="panel"><div class="panel-head"><h2>Needs attention</h2></div><div class="list">
+      ${STATE.incidents.filter(i => i.status !== 'closed').map(i => `<a class="item" href="#monitoring" style="text-decoration:none;color:inherit"><div class="top"><b>${i.title}</b>${pill('bad', 'Incident')}</div><span class="small muted">${i.site} · ${i.time}</span></a>`).join('')}
+      ${VANS.filter(v => v.events.some(e => e.res === 'review')).map(v => `<a class="item" href="#inventory" style="text-decoration:none;color:inherit" data-van="${v.id}"><div class="top"><b>${v.id} movement to review</b>${pill('warn', 'Review')}</div><span class="small muted">${TECHS.find(t => t.id === v.tech).name}</span></a>`).join('')}
+      <a class="item" href="#library" style="text-decoration:none;color:inherit"><div class="top"><b>J-24117 waiting for budget approval</b>${pill('info-p', 'Approval')}</div><span class="small muted">Condenser fan motor · $1,185</span></a>
+      <a class="item" href="#monitoring" style="text-decoration:none;color:inherit"><div class="top"><b>Coral Dental AHU-1 short-cycling</b>${pill('warn', 'Watch')}</div><span class="small muted">9 compressor starts per hour</span></a>
+    </div></section>
+  </div>
+  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Same job, compared</h2><span class="sub">Condenser fan motor replacements</span>${info('Comparison', 'When the same kind of job comes in again, WAMWins shows past runs side by side: cost, time, margin and how long it took to get the part.')}</div>
+    ${historyTable('B')}</section>`);
+  el('view').querySelectorAll('[data-van]').forEach(a => a.addEventListener('click', () => { STATE.van = a.dataset.van; }));
+};
+
+function historyTable(sc, cur) {
+  const rows = HISTORY[sc].map(h => { const cost = h[2] + h[3] * RATE.laborCost; const tot = cost * (1 + RATE.overheadPct); return `<tr><td>${h[0]}</td><td>${h[1]}</td><td class="num">${fmt$(h[2])}</td><td class="num">${h[3]} h</td><td class="num">${fmt$(tot)}</td><td class="num">${h[4] ? fmt$(h[4]) : 'Plan'}</td><td class="num">${h[4] ? Math.round((1 - tot / h[4]) * 100) + '%' : '—'}</td><td class="num">${h[5]} d</td></tr>`; });
+  const curRow = cur ? (() => { const c = runCost(cur); return `<tr class="sel"><td><b>${cur.id}</b></td><td>This run (so far)</td><td class="num">${fmt$(c.m)}</td><td class="num">${cur.hours} h</td><td class="num">${fmt$(c.total)}</td><td class="num">${cur.price ? fmt$(cur.price) : 'Plan'}</td><td class="num">${cur.price ? Math.round((1 - c.total / cur.price) * 100) + '%' : '—'}</td><td class="num">—</td></tr>`; })() : '';
+  return `<div class="table-wrap"><table><thead><tr><th>Job</th><th>Work</th><th class="num">Materials</th><th class="num">Labor</th><th class="num">Total cost</th><th class="num">Price</th><th class="num">Margin</th><th class="num">Part lead time</th></tr></thead><tbody>${curRow}${rows.join('')}</tbody></table></div>`;
+}
+
+VIEWS.library = () => {
+  const r = RUNS.find(x => x.id === STATE.run), steps = stepsFor(r.sc), idx = r.at === 'done' ? steps.length : steps.findIndex(s => s.k === r.at), cur = steps[idx], c = runCost(r);
+  const done = idx >= steps.length;
+  view(`
+  <h1>ICT Library</h1><p class="lead">Every request runs through the standard procedure. Each step has its form, its owner and a time stamp, and the finished run is kept for costing and comparison.</p>
+  <div class="grid g-side" style="margin-top:16px">
+    <div class="section-gap">
+      <section class="panel"><div class="panel-head"><h2>Requests in progress</h2>${info('Scenarios', 'A: routine call from van stock. B: repair needing special parts. C: equipment replacement with permit. D: maintenance agreement visit. Each scenario is the standard procedure with different steps switched on.')}</div>
+        <div class="list">${RUNS.map(x => { const st = stepsFor(x.sc), i = x.at === 'done' ? st.length : st.findIndex(s => s.k === x.at); return `<button class="item ${x.id === r.id ? 'sel' : ''}" type="button" data-run="${x.id}"><div class="top"><b>${x.id} · ${x.title}</b>${pill(x.at === 'done' ? 'ok' : 'info-p', x.at === 'done' ? 'Completed' : `Step ${i + 1} of ${st.length}`)}</div><span class="small muted">${x.customer} · Scenario ${x.sc}: ${SCEN[x.sc]}</span></button>`; }).join('')}</div></section>
+      <section class="panel"><div class="panel-head"><h2>${r.id} · standard procedure</h2><span class="sub">Scenario ${r.sc}</span></div>
+        <ol class="steps">${steps.map((s, i) => `<li class="${i < idx || done ? 'done' : i === idx ? 'now' : 'todo'}"><span class="dot">${i < idx || done ? '✓' : i + 1}</span><div><div class="lbl">${s.label}${s.added ? '<span class="added">added step</span>' : ''}</div><div class="meta">${s.role} · ${s.form}</div></div></li>`).join('')}</ol></section>
+    </div>
+    <div class="section-gap">
+      <section class="panel">${done ? `<div class="panel-head"><h2>Completed</h2>${pill('ok', 'Saved to library')}</div><p class="lead">The run, its forms and its final costs are saved. The next request of this kind is compared against it.</p>` : `
+        <div class="panel-head"><h2>Current step</h2>${pill('warn', cur.role)}</div>
+        <div class="formcard"><b>${cur.form}</b>${formBody(r, cur)}</div>
+        <div class="row" style="margin-top:12px">${cur.gate ? `<button class="btn primary" type="button" id="adv">Approve</button><button class="btn danger" type="button" id="rej">Reject: re-quote</button>` : `<button class="btn primary" type="button" id="adv">Complete step</button>`}</div>`}</section>
+      <section class="panel"><div class="panel-head"><h2>Costing</h2>${info('Costing', 'Workflow plus the actual scenario gives the cost: materials, labor hours at the loaded rate, and overhead. Rates here are sample values.')}</div>
+        <dl class="kv"><dt>Materials</dt><dd>${fmt$(c.m)}</dd><dt>Labor</dt><dd>${r.hours} h × ${fmt$(RATE.laborCost)} = ${fmt$(c.l)}</dd><dt>Overhead (18%)</dt><dd>${fmt$(c.o)}</dd><dt><b>Total cost</b></dt><dd><b>${fmt$(c.total)}</b></dd><dt>Customer price</dt><dd>${r.price ? fmt$(r.price) + ' · margin ' + Math.round((1 - c.total / r.price) * 100) + '%' : 'Covered by maintenance agreement'}</dd></dl></section>
+      <section class="panel"><div class="panel-head"><h2>Activity</h2></div><div class="table-wrap"><table><tbody>${r.log.slice().reverse().map(l => `<tr><td class="muted small" style="white-space:nowrap">${l[0]}</td><td><b class="small">${l[1]}</b><div class="small muted">${l[2]}</div></td></tr>`).join('')}</tbody></table></div></section>
+    </div>
+  </div>
+  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Past runs of scenario ${r.sc}</h2><span class="sub">${SCEN[r.sc]}</span></div>${historyTable(r.sc, r)}</section>`);
+  el('view').querySelectorAll('[data-run]').forEach(b => b.onclick = () => { STATE.run = b.dataset.run; VIEWS.library(); });
+  const adv = el('adv'); if (adv) adv.onclick = () => {
+    r.log.push([hhmm(NOW_MIN + r.log.length * 3), cur.form, cur.gate ? 'Approved' : 'Completed']);
+    r.at = steps[idx + 1]?.k || 'done'; if (r.at === 'done') r.log.push([hhmm(NOW_MIN + 40), 'Library', 'Run saved with final costs']);
+    toast(cur.gate ? `${r.id} approved. Purchasing can issue the purchase order.` : r.at === 'done' ? `${r.id} completed and saved to the library.` : `${cur.form} saved. Next: ${steps[idx + 1].label}.`);
+    renderNav(); VIEWS.library();
+  };
+  const rej = el('rej'); if (rej) rej.onclick = () => { r.log.push([hhmm(NOW_MIN), 'Approval', 'Rejected: re-quote with a second distributor']); r.at = 'quotes'; toast(`${r.id} sent back to purchasing for new quotes.`); VIEWS.library(); };
+};
+function formBody(r, s) {
+  const m = r.mat.map(x => `<li>${x[1]} × ${x[0]} — ${fmt$(x[2])}</li>`).join('');
+  const T = {
+    budget: `<dl class="kv"><dt>Amount</dt><dd>${fmt$(runCost(r).m)}</dd><dt>Cost center</dt><dd>Commercial service</dd><dt>Limit applied</dt><dd>Under $2,500: service manager</dd><dt>Quotes</dt><dd>Ferguson $286 · Johnstone $304 · Gemaire $311</dd></dl>`,
+    permit: `<dl class="kv"><dt>Authority</dt><dd>Palm Beach County Building Division</dd><dt>Type</dt><dd>Mechanical, exact changeout</dd><dt>Equipment</dt><dd>3-ton heat pump, serials from receiving</dd></dl>`,
+    job: `<dl class="kv"><dt>Technician</dt><dd>${TECHS.find(t => t.id === r.tech).name}</dd><dt>Parts from van</dt><dd><ul style="margin:0;padding-left:18px">${m}</ul></dd><dt>Readings</dt><dd>Entered on completion</dd></dl>`,
+    estimate: `<dl class="kv"><dt>Price book</dt><dd>${r.price ? fmt$(r.price) : 'Maintenance agreement; extra work estimated only if found'}</dd><dt>Materials</dt><dd><ul style="margin:0;padding-left:18px">${m}</ul></dd></dl>`,
+  };
+  return T[s.k] || `<dl class="kv"><dt>Owner</dt><dd>${s.role}</dd><dt>Job</dt><dd>${r.title}</dd><dt>Customer</dt><dd>${r.customer}</dd></dl>`;
+}
+
+VIEWS.dispatch = () => {
+  const x = m => ((m - 7 * 60) / (11 * 60)) * 100;
+  const q = QUEUE.find(j => j.id === STATE.qsel);
+  const sugg = q ? TECHS.map(t => {
+    const skill = t.skills.includes(q.skill) ? 1 : 0, van = VANS.find(v => v.id === t.van), hasPart = van.stock.some(s => q.part.toLowerCase().startsWith(s.name.split(' ').slice(0, 2).join(' ').toLowerCase()) && s.qty > 0) ? 1 : 0;
+    const busyNow = BOARD.some(b => b.tech === t.id && b.s <= NOW_MIN && b.e > NOW_MIN && b.st !== 'done');
+    const score = skill * 50 + hasPart * 20 + (busyNow ? 0 : 15) + Math.max(0, 25 - DIST[t.id]);
+    return { t, skill, hasPart, busyNow, score };
+  }).sort((a, b) => b.score - a.score) : [];
+  view(`
+  <h1>Dispatch</h1><p class="lead">Drag-free demo of the dispatch board: pick a waiting job and WAMWins ranks technicians by skill, availability, distance and whether the part is already on their van.</p>
+  <div class="board" style="margin-top:16px"><div class="board-inner">
+    <div class="b-row b-head"><div class="b-name"><b>Technician</b></div><div class="b-track">${Array.from({ length: 11 }, (_, i) => `<span>${hhmm((7 + i) * 60).replace(':00', '')}</span>`).join('')}</div></div>
+    ${TECHS.map(t => `<div class="b-row"><div class="b-name"><b>${t.name}</b><span class="muted">${t.van} · ${t.skills.join(', ')}</span></div><div class="b-track"><div class="nowline" style="left:${x(NOW_MIN)}%" aria-hidden="true"></div>${BOARD.filter(b => b.tech === t.id).map(b => `<div class="blk ${b.st || ''}" style="left:${x(b.s)}%;width:${x(b.e) - x(b.s)}%" title="${b.t}"><b>${b.t}</b>${hhmm(b.s)}–${hhmm(b.e)}</div>`).join('')}</div></div>`).join('')}
+  </div></div>
+  <div class="grid g2" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>Waiting to be dispatched</h2>${info('Queue', 'Customer requests, maintenance visits and Loxone incidents all arrive here. Incidents from monitoring are marked urgent.')}</div>
+      <div class="list">${QUEUE.length ? QUEUE.map(j => `<button class="item ${j.id === STATE.qsel ? 'sel' : ''}" type="button" data-q="${j.id}"><div class="top"><b>${j.title}</b>${pill(j.pri === 'Urgent' ? 'bad' : j.pri === 'High' ? 'warn' : 'plain', j.pri)}</div><span class="small muted">${j.customer} · needs ${j.skill} · ${j.part}</span></button>`).join('') : '<p class="muted">Nothing waiting. Every job is on the board.</p>'}</div></section>
+    <section class="panel"><div class="panel-head"><h2>${q ? 'Best technicians for ' + q.id : 'Technician suggestions'}</h2></div>
+      ${q ? `<div class="list">${sugg.slice(0, 4).map((s, i) => `<div class="item"><div class="top"><b>${i + 1}. ${s.t.name}</b><span class="small muted">${DIST[s.t.id]} mi</span></div>
+        <div class="row">${s.skill ? pill('ok', q.skill) : pill('bad', 'No ' + q.skill)}${s.hasPart ? pill('ok', 'Part on ' + s.t.van) : pill('warn', 'Part not on van')}${s.busyNow ? pill('warn', 'On a job now') : pill('ok', 'Free now')}</div>
+        <div class="row" style="justify-content:space-between"><div class="bar" style="flex:1"><i style="width:${Math.round(s.score / 1.1)}%"></i></div><button class="btn sm ${i === 0 ? 'primary' : ''}" type="button" data-assign="${s.t.id}">Assign</button></div></div>`).join('')}</div>` : '<p class="muted">Choose a waiting job to see who should take it.</p>'}</section>
+  </div>`);
+  el('view').querySelectorAll('[data-q]').forEach(b => b.onclick = () => { STATE.qsel = b.dataset.q; VIEWS.dispatch(); });
+  el('view').querySelectorAll('[data-assign]').forEach(b => b.onclick = () => {
+    const t = TECHS.find(x => x.id === b.dataset.assign), mine = BOARD.filter(x => x.tech === t.id).sort((a, c) => a.s - c.s);
+    let s = Math.ceil((NOW_MIN + 15) / 15) * 15; for (const m of mine) if (s < m.e && s + q.mins > m.s) s = Math.ceil(m.e / 15) * 15;
+    BOARD.push({ tech: t.id, s, e: s + q.mins, t: q.customer.split(',')[0] + ' · ' + q.title.toLowerCase(), st: q.pri === 'Urgent' ? 'urgent new' : 'new' });
+    QUEUE.splice(QUEUE.indexOf(q), 1); STATE.qsel = null;
+    toast(`${q.id} dispatched to ${t.name} for ${hhmm(s)}. Customer notified by SMS and email.`);
+    renderNav(); VIEWS.dispatch();
+  });
+};
+
+VIEWS.inventory = () => {
+  const v = VANS.find(x => x.id === STATE.van), t = TECHS.find(x => x.id === v.tech);
+  const low = v.stock.filter(s => s.qty < s.min).length;
+  view(`
+  <h1>Van inventory</h1><p class="lead">RFID says exactly which tagged item left a container; the camera shows the removal and catches what tags miss. A movement is accepted when RFID, camera and an open pull request agree.</p>
+  <div class="kpis" style="margin-top:16px">${VANS.map(x => { const r = x.events.filter(e => e.res === 'review').length; return `<button class="kpi ${r ? 'alert' : ''}" type="button" data-van="${x.id}" style="${x.id === v.id ? 'border-color:var(--blue);box-shadow:inset 0 -3px 0 var(--blue)' : ''}"><span class="v" style="font-size:20px">${x.id}</span><span class="l">${TECHS.find(y => y.id === x.tech).name}</span><span class="note">${x.reconciled ? 'End of shift confirmed' : r ? r + ' to review' : 'All movements matched'}</span></button>`; }).join('')}</div>
+  <div class="grid g-side" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>${v.id} movements today</h2>${info('Three checks', 'Each removal is checked three ways: the RFID count change, what the camera saw, and the technician\'s open pull request. Any disagreement goes to review with the camera clip attached.')}</div>
+      <div class="table-wrap"><table><thead><tr><th>Time</th><th>Item</th><th>RFID</th><th>Camera</th><th>Pull request</th><th>Result</th><th></th></tr></thead><tbody>
+      ${v.events.map((e, i) => `<tr><td class="muted">${e.t}</td><td>${e.item}</td><td class="small">${e.rfid}</td><td class="small">${e.cam}</td><td class="small">${e.pr}</td><td>${e.res === 'ok' ? pill('ok', 'Matched') : e.res === 'loss' ? pill('bad', 'Flagged loss') : e.res === 'fixed' ? pill('ok', 'Explained') : pill('warn', 'Review')}</td><td>${e.res === 'review' ? `<div class="row"><button class="btn sm" type="button" data-fix="${i}">Explained</button><button class="btn sm danger" type="button" data-loss="${i}">Flag loss</button></div>` : ''}</td></tr>`).join('')}
+      </tbody></table></div></section>
+    <section class="panel"><div class="panel-head"><h2>End of shift</h2>${v.reconciled ? pill('ok', 'Confirmed') : pill('warn', 'Not confirmed')}</div>
+      <p class="small muted">Before parking, ${t.name} reviews tools used, materials used and what remains. Confirming posts the counts to the central database and the daily reports.</p>
+      <dl class="kv" style="margin:12px 0"><dt>Items below minimum</dt><dd>${low}</dd><dt>Open reviews</dt><dd>${v.events.filter(e => e.res === 'review').length}</dd><dt>Value on board</dt><dd>${fmt$(v.stock.reduce((s, x, j) => s + x.qty * [24, 19, 38, 31, 27, 34, 85, 210, 0, 0][j], 0))}</dd></dl>
+      <button class="btn primary" type="button" id="recon" ${v.reconciled ? 'disabled' : ''}>Confirm end of shift</button></section>
+  </div>
+  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>${v.id} stock</h2><span class="sub">${t.name}</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Item</th><th>SKU</th><th>Tagged by</th><th class="num">On van</th><th class="num">Minimum</th><th class="num">Days on van</th><th>Status</th></tr></thead><tbody>
+    ${v.stock.map(s => `<tr><td>${s.name}</td><td class="muted">${s.sku}</td><td class="small">${s.tag}</td><td class="num">${s.qty}</td><td class="num">${s.min}</td><td class="num">${s.age}</td><td>${s.qty < s.min ? pill('warn', 'Restock tonight') : s.age > 90 ? pill('info-p', 'Aging') : pill('ok', 'OK')}</td></tr>`).join('')}
+    </tbody></table></div></section>`);
+  el('view').querySelectorAll('[data-van]').forEach(b => b.onclick = () => { STATE.van = b.dataset.van; VIEWS.inventory(); });
+  el('view').querySelectorAll('[data-fix]').forEach(b => b.onclick = () => { v.events[+b.dataset.fix].res = 'fixed'; toast('Movement explained by the technician and closed.'); renderNav(); VIEWS.inventory(); });
+  el('view').querySelectorAll('[data-loss]').forEach(b => b.onclick = () => { v.events[+b.dataset.loss].res = 'loss'; toast('Flagged as a loss. The inventory lead and manager are notified.'); renderNav(); VIEWS.inventory(); });
+  el('recon').onclick = () => { if (v.events.some(e => e.res === 'review')) { toast('Resolve the open reviews before confirming the shift.'); return; } v.reconciled = true; toast(`${v.id} end of shift confirmed. Reports updated.`); VIEWS.inventory(); };
+};
+
+VIEWS.monitoring = () => {
+  const s = SITES.find(x => x.id === STATE.site), b = STATE.braze, inc = STATE.incidents.find(i => i.status !== 'closed');
+  view(`
+  <h1>Monitoring</h1><p class="lead">Loxone Miniservers report sensor readings through a read-only gateway. A reading that breaks a rule opens an incident, alarms the right people and can become a dispatch job.</p>
+  ${inc ? `<div class="alarm" style="margin-top:16px" role="alert"><div class="row" style="justify-content:space-between"><h3>${inc.title}</h3>${pill('bad', inc.status === 'dispatched' ? 'Technician dispatched' : 'Open')}</div>
+    <p>${inc.site} · ${inc.detail} · ${inc.time}</p>
+    <div class="chan"><div><b>App alarm</b><br>Site admin, on-call dispatcher</div><div><b>Email</b><br>Sent to 3 people</div><div><b>SMS</b><br>Sent to 3 people</div><div><b>Acknowledged</b><br>${inc.ack ? 'Yes, by ' + inc.ack : 'Waiting · repeats in 5 min'}</div></div>
+    <div class="row">${inc.ack ? '' : '<button class="btn" type="button" id="ack">Acknowledge</button>'}${inc.status === 'open' ? '<button class="btn primary" type="button" id="todisp">Create dispatch job</button>' : '<a class="btn" href="#dispatch">Open dispatch</a>'}</div></div>` : ''}
+  <div class="grid g-side" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>Connected sites</h2>${info('Connect with', 'Each site is paired with its Loxone Miniserver through Connect with. WAMWins reads the controls the Miniserver lists and maps them to devices in the hardware library. It sends no commands to customer systems.')}</div>
+      <div class="row" style="margin-bottom:12px">${SITES.map(x => `<button class="btn sm ${x.id === s.id ? 'blue' : ''}" type="button" data-site="${x.id}">${x.name}</button>`).join('')}</div>
+      <div class="row small muted" style="margin-bottom:8px">${s.kind} · ${s.ctl} · ${pill('ok', 'Online')} last reading 10:29 AM</div>
+      <div class="table-wrap"><table><thead><tr><th>Sensor</th><th class="num">Reading</th><th>Status</th></tr></thead><tbody>${s.sensors.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td>${r[2] === 'ok' ? pill('ok', 'Normal') : r[2] === 'bad' ? pill('bad', 'Alarm') : pill('warn', 'Watch')}</td></tr>`).join('')}</tbody></table></div>
+      ${s.id === 's1' && !STATE.incidents.length ? '<div class="row" style="margin-top:12px"><button class="btn danger" type="button" id="sim">Simulate a leak at this site</button><span class="small muted">Demo only</span></div>' : ''}</section>
+    <section class="panel"><div class="panel-head"><h2>Connect with</h2></div>
+      <div class="field"><label for="ctl">Controller</label><select id="ctl"><option>Loxone Miniserver</option><option disabled>Control4 (coming)</option><option disabled>Other controllers (coming)</option></select></div>
+      <p class="small muted" style="margin-top:10px">Pairing uses a dedicated read-only Loxone user. Readings go to PostgreSQL; video never passes through Loxone.</p></section>
+  </div>
+  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Brazing supervision</h2><span class="sub">${b.session} · ${b.tech}</span>${info('View only', 'The supervisor watches the work and the readings, and sends alerts or instructions. Nobody can start, stop or adjust the equipment remotely. Video has no audio.')}</div>
+    <div class="grid g2">
+      <div class="section-gap"><div class="cam"><canvas id="camc" width="640" height="360" aria-label="Live camera placeholder"></canvas><span class="live">LIVE · DEMO</span><div class="ovl"><span>Line set, outdoor unit</span><span>No audio recorded</span></div></div>
+        <div class="field"><label for="msg">Alert to technician</label><select id="msg"><option>Check nitrogen flow before brazing the next joint</option><option>Hold the pressure test the full hour</option><option>Pause and call me</option></select></div>
+        <button class="btn primary" type="button" id="send">Send alert</button>
+        ${b.alerts.length ? `<div class="list">${b.alerts.map(a => `<div class="item"><div class="top"><span class="small">${a.msg}</span>${a.ack ? pill('ok', 'Acknowledged') : pill('warn', 'Delivered')}</div></div>`).join('')}</div>` : ''}</div>
+      <div class="section-gap">
+        <div><div class="row" style="justify-content:space-between"><h3>Evacuation</h3><span class="small"><b>${b.readings[b.readings.length - 1]}</b> microns · minute ${b.min}</span></div>${microChart(b.readings)}
+          <div class="row"><button class="btn sm" type="button" id="tick">Advance 1 minute</button><span class="small muted">Target 500 microns, then a decay test</span></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Quality checkpoint</th><th>Evidence</th><th>Status</th></tr></thead><tbody>
+          <tr><td>Nitrogen during brazing</td><td class="small">4 SCFH logged, video</td><td>${pill('ok', 'Passed')}</td></tr>
+          <tr><td>Pressure test</td><td class="small">450 psig held 60 min, no drop</td><td>${pill('ok', 'Passed')}</td></tr>
+          <tr><td>Evacuation and decay test</td><td class="small">${b.readings[b.readings.length - 1] <= 500 ? 'Below 500 microns' : 'Pulling down'}</td><td>${b.checks.vac === 'ok' ? pill('ok', 'Passed') : b.checks.vac === 'bad' ? pill('bad', 'Rising: check for leak') : pill('info-p', 'In progress')}</td></tr>
+          <tr><td>Final leak check</td><td class="small">Bubble + electronic</td><td>${pill('plain', 'Not started')}</td></tr>
+          <tr><td>Materials from V-102</td><td class="small">Alloy, nitrogen, line set</td><td>${pill('ok', 'Recorded')}</td></tr>
+        </tbody></table></div></div>
+    </div></section>`);
+  el('view').querySelectorAll('[data-site]').forEach(x => x.onclick = () => { STATE.site = x.dataset.site; VIEWS.monitoring(); });
+  const sim = el('sim'); if (sim) sim.onclick = () => {
+    s.sensors[2][1] = 'Wet'; s.sensors[2][2] = 'bad'; s.sensors[0][1] = '41 psi'; s.sensors[0][2] = 'bad'; s.status = 'bad';
+    STATE.incidents.push({ title: 'Leak detected: 3rd floor riser', site: s.name, detail: 'Leak sensor wet, main pressure 62 → 41 psi', time: hhmm(NOW_MIN + 1), status: 'open' });
+    toast('Leak at Harbor Plaza. Alarm sent by app, email and SMS to 3 people.'); renderNav(); VIEWS.monitoring();
+  };
+  const ack = el('ack'); if (ack) ack.onclick = () => { inc.ack = 'Dana Ruiz (on-call dispatcher)'; toast('Alarm acknowledged. Escalation stopped.'); VIEWS.monitoring(); };
+  const td = el('todisp'); if (td) td.onclick = () => {
+    QUEUE.unshift({ id: 'Q-' + (554 + STATE.incidents.length), title: 'Leak: 3rd floor riser', customer: 'Harbor Plaza Offices, Riviera Beach', skill: 'Plumbing', part: 'PEX-A pipe 3/4"', mins: 120, pri: 'Urgent' });
+    inc.status = 'dispatched'; STATE.qsel = QUEUE[0].id; toast('Urgent job created from the incident. Choose a technician.'); location.hash = '#dispatch';
+  };
+  el('send').onclick = () => { const a = { msg: el('msg').value, ack: false }; b.alerts.unshift(a); toast('Alert sent to ' + b.tech + '.'); VIEWS.monitoring(); setTimeout(() => { a.ack = true; if (STATE.route === 'monitoring') VIEWS.monitoring(); }, 2500); };
+  el('tick').onclick = () => { b.min++; const r = evac(b.min); b.readings.push(r); if (r <= 500 && b.checks.vac === 'run' && b.min >= 12) b.checks.vac = 'ok'; if (b.min > 16) { b.checks.vac = 'bad'; toast('Vacuum rising after isolation. Supervisor alerted to check for a leak.'); } VIEWS.monitoring(); };
+  drawCam();
+};
+function microChart(rd) {
+  const W = 420, H = 150, L = 44, B = 22, max = 2600, n = Math.max(20, rd.length);
+  const X = i => L + (i / (n - 1)) * (W - L - 8), Y = v => 8 + (1 - v / max) * (H - B - 8);
+  const pts = rd.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Micron readings over time" style="width:100%;height:auto;max-width:100%">
+    ${[0, 500, 1000, 2000].map(v => `<line x1="${L}" x2="${W - 8}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="10" fill="var(--ink-3)">${v}</text>`).join('')}
+    <line x1="${L}" x2="${W - 8}" y1="${Y(500)}" y2="${Y(500)}" stroke="var(--ok)" stroke-dasharray="4 4"/><text x="${W - 10}" y="${Y(500) - 5}" text-anchor="end" font-size="10" fill="var(--ok)">500 target</text>
+    <polyline points="${pts}" fill="none" stroke="var(--blue)" stroke-width="2.2"/>
+    <circle cx="${X(rd.length - 1)}" cy="${Y(rd[rd.length - 1])}" r="4" fill="var(--blue)"/>
+    <text x="${L}" y="${H - 6}" font-size="10" fill="var(--ink-3)">0 min</text><text x="${W - 8}" y="${H - 6}" text-anchor="end" font-size="10" fill="var(--ink-3)">${n - 1} min</text></svg>`;
+}
+function drawCam() {   // a still, stylized placeholder for the live camera (no real video in the demo)
+  const c = el('camc'); if (!c) return; const g = c.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, 640, 360); grd.addColorStop(0, '#1B2742'); grd.addColorStop(1, '#0A1022'); g.fillStyle = grd; g.fillRect(0, 0, 640, 360);
+  g.fillStyle = '#2B3A5E'; g.fillRect(380, 90, 200, 210); g.fillStyle = '#34466F'; for (let i = 0; i < 9; i++) g.fillRect(392, 104 + i * 20, 176, 8);
+  g.strokeStyle = '#C98A4B'; g.lineWidth = 9; g.beginPath(); g.moveTo(0, 250); g.lineTo(300, 250); g.quadraticCurveTo(340, 250, 360, 215); g.lineTo(380, 190); g.stroke();
+  g.lineWidth = 6; g.beginPath(); g.moveTo(0, 278); g.lineTo(320, 278); g.quadraticCurveTo(360, 278, 380, 250); g.stroke();
+  const fl = g.createRadialGradient(300, 250, 2, 300, 250, 46); fl.addColorStop(0, 'rgba(255,240,200,.95)'); fl.addColorStop(.4, 'rgba(255,170,60,.55)'); fl.addColorStop(1, 'rgba(255,120,0,0)'); g.fillStyle = fl; g.beginPath(); g.arc(300, 250, 46, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(255,193,7,.9)'; g.lineWidth = 2; g.setLineDash([6, 5]); g.strokeRect(258, 214, 84, 72); g.setLineDash([]);
+  g.fillStyle = 'rgba(255,193,7,.95)'; g.font = '600 13px Poppins, sans-serif'; g.fillText('Joint 3 · N₂ 4 SCFH', 258, 206);
+}
+
+VIEWS.cost = () => {
+  view(`
+  <h1>Cost vs ServiceTitan</h1><p class="lead">Move the sliders to match Cassidy's numbers. ServiceTitan does not publish prices; the per-technician range is from third-party reports. The WAMWins license is an example, not a price.</p>
+  <section class="panel" style="margin-top:16px"><div class="inputs">
+    <div class="field"><label for="techs">Field technicians: <output id="o-techs"></output></label><input id="techs" type="range" min="20" max="120" step="5" value="60"></div>
+    <div class="field"><label for="st">ServiceTitan per technician per month: <output id="o-st"></output></label><input id="st" type="range" min="245" max="500" step="5" value="245"></div>
+    <div class="field"><label for="lic">WAMWins license per technician per month: <output id="o-lic"></output></label><input id="lic" type="range" min="50" max="245" step="5" value="150"></div>
+    <div class="field"><label for="host">Hosting per month: <output id="o-host"></output></label><input id="host" type="range" min="500" max="3000" step="100" value="1500"></div>
+  </div></section>
+  <div class="grid g-side" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>What Cassidy pays per year</h2>${info('Why an IT director in every option', 'Cassidy plans to hire an IT director either way, so the salary plus 30% employer costs is counted in all three options. Building alone adds two developers, also with 30% employer costs.')}</div><div id="costchart"></div></section>
+    <section class="panel section-gap"><div class="saving" id="saving"></div>
+      <dl class="kv" id="breakdown"></dl>
+      <p class="src">Sources: ServiceTitan $245–$500 per technician per month, reported by <a href="https://www.itqlick.com/servicetitan/pricing" target="_blank" rel="noopener">ITQlick</a>; IT director median about $118,000 in West Palm Beach, <a href="https://www.payscale.com/research/US/Job=Information_Technology_(IT)_Director/Salary/254887d5/West-Palm-Beach-FL" target="_blank" rel="noopener">Payscale</a>; Florida software developer median $130,980, BLS OEWS 2025 via <a href="https://americabynumbers.com/salary/software-developers-salary-in-florida/" target="_blank" rel="noopener">AmericaByNumbers</a>. Employer costs of 30% are an assumption.</p></section>
+  </div>`);
+  const ids = ['techs', 'st', 'lic', 'host'];
+  const calc = () => {
+    const [n, st, lic, host] = ids.map(i => +el(i).value);
+    el('o-techs').textContent = n; el('o-st').textContent = fmt$(st); el('o-lic').textContent = fmt$(lic); el('o-host').textContent = fmt$(host);
+    // Employer costs (30%) apply to every salary in every option.
+    const dir = 118000 * 1.3, devs = 2 * 130980 * 1.3, hostY = host * 12;
+    const A = n * st * 12 + dir, B = dir + devs + hostY, C = n * lic * 12 + hostY + dir;
+    const opts = [['A. Stay on ServiceTitan', A, 'var(--ink-3)'], ['B. Build it alone', B, 'var(--ink-3)'], ['C. License WAMWins', C, 'var(--blue)']];
+    const max = Math.max(A, B, C) * 1.08, W = 520, rowH = 54;
+    el('costchart').innerHTML = `<svg viewBox="0 0 ${W} ${opts.length * rowH + 10}" role="img" aria-label="Annual cost of the three options" style="width:100%;height:auto">${opts.map((o, i) => {
+      const y = i * rowH + 8, w = (o[1] / max) * (W - 150);
+      return `<text x="0" y="${y + 13}" font-size="12.5" fill="var(--ink)" font-weight="${i === 2 ? 600 : 400}">${o[0]}</text><rect x="0" y="${y + 20}" width="${w}" height="20" rx="4" fill="${o[2]}" ${i === 2 ? '' : 'fill-opacity=".45"'}/><text x="${w + 8}" y="${y + 35}" font-size="13" font-weight="600" fill="var(--ink)">${fmt$(o[1])}</text>`;
+    }).join('')}</svg>`;
+    const save = A - C;
+    el('saving').innerHTML = save > 0 ? `<span>Option C saves Cassidy</span><b>${fmt$(save)} a year</b><span class="small">compared with staying on ServiceTitan, before ServiceTitan's one-time implementation fee of $5,000–$50,000</span>` : `<span>At these settings WAMWins does not save money</span><b>${fmt$(-save)} more a year</b><span class="small">Lower the license price or check the technician count.</span>`;
+    el('saving').style.background = save > 0 ? '' : 'var(--red-soft)'; el('saving').style.color = save > 0 ? '' : 'var(--red)';
+    el('breakdown').innerHTML = `<dt>ServiceTitan subscription</dt><dd>${fmt$(n * st * 12)}</dd><dt>WAMWins license</dt><dd>${fmt$(n * lic * 12)}</dd><dt>Hosting</dt><dd>${fmt$(hostY)}</dd><dt>IT director + 30% (all options)</dt><dd>${fmt$(dir)}</dd><dt>Two developers + 30% (option B)</dt><dd>${fmt$(devs)}</dd>`;
+  };
+  ids.forEach(i => el(i).addEventListener('input', calc)); calc();
+};
+
+// ============================================================ warehouse (sample data)
+const WH = {
+  name: 'Riviera Beach warehouse',
+  zones: [['A', 'HVAC parts'], ['B', 'Plumbing'], ['C', 'Equipment'], ['D', 'Refrigerant cage'], ['T', 'Tool crib']],
+  zone: 'all',
+  items: [
+    // sku, name, zone, bin, qty, min, max, unit cost, days since last movement
+    ['CAP-4505', 'Dual run capacitor 45/5 µF', 'A', 'A-02-3', 64, 40, 120, 24, 2], ['CON-230', 'Contactor 2-pole 30 A', 'A', 'A-02-4', 22, 30, 90, 19, 1],
+    ['HSK-01', 'Hard start kit', 'A', 'A-03-1', 9, 12, 36, 38, 6], ['FAN-14', 'Condenser fan motor 1/4 HP', 'A', 'A-05-2', 4, 4, 12, 286, 3],
+    ['BLW-12', 'Blower motor 1/2 HP', 'A', 'A-05-3', 2, 3, 8, 412, 41], ['FLT-1625', 'Filter 16x25x1 (case of 12)', 'A', 'A-08-1', 38, 20, 80, 54, 5],
+    ['TPV-34', 'T&P relief valve 3/4"', 'B', 'B-01-2', 31, 15, 60, 31, 1], ['PEX-3410', 'PEX-A pipe 3/4", 10 ft', 'B', 'B-04-1', 140, 80, 300, 27, 0],
+    ['PEXF-34', 'PEX-A fittings 3/4" (bag of 25)', 'B', 'B-04-3', 18, 20, 60, 46, 2], ['WH-50', 'Water heater 50 gal electric', 'C', 'C-10', 3, 2, 6, 685, 19],
+    ['HP-3T', '3-ton heat pump system', 'C', 'C-02', 2, 1, 4, 4120, 12], ['AH-3T', '3-ton air handler', 'C', 'C-03', 1, 1, 3, 1640, 63],
+    ['REF-410', 'R-410A cylinder 25 lb', 'D', 'D-01', 14, 10, 30, 210, 4], ['REF-454', 'R-454B cylinder 20 lb', 'D', 'D-02', 6, 6, 20, 265, 9],
+    ['BRZ-15', 'Brazing alloy 15%, 1 lb', 'A', 'A-07-2', 26, 15, 50, 34, 3], ['NIT-40', 'Nitrogen cylinder 40 cf', 'D', 'D-05', 8, 6, 16, 85, 7],
+    ['TL-MIC', 'Digital micron gauge', 'T', 'T-01', 5, 3, 8, 189, 33], ['TL-VP6', 'Vacuum pump 6 CFM', 'T', 'T-02', 3, 2, 6, 420, 95],
+  ].map(r => ({ sku: r[0], name: r[1], zone: r[2], bin: r[3], qty: r[4], min: r[5], max: r[6], cost: r[7], idle: r[8] })),
+  inbound: [
+    { po: 'PO-8820', supplier: 'Ferguson HVAC', lines: [['CON-230', 40], ['HSK-01', 24]], eta: 'Today, 1:00 PM', status: 'due', match: null },
+    { po: 'PO-8821', supplier: 'Johnstone Supply', lines: [['FAN-14', 6], ['BLW-12', 4]], eta: 'Today, 3:30 PM', status: 'due', match: null, priceDiff: true },
+    { po: 'PO-8812', supplier: 'Gemaire Distributors', lines: [['HP-3T', 1]], eta: 'Received Thu', status: 'received', match: 'ok' },
+  ],
+  portal: [
+    { t: '7:12 AM', door: 'Dock door 1', item: 'Vacuum pump 6 CFM (T-02)', rfid: 'Tool tag out', cam: 'Carried out by Kayla Brooks', check: 'Checked out to V-102', res: 'ok' },
+    { t: '7:40 AM', door: 'Dock door 2', item: 'R-410A cylinder 25 lb', rfid: 'Item tag out', cam: 'Loaded into V-105', check: 'Release slip RS-3307', res: 'ok' },
+    { t: '9:58 AM', door: 'Side door', item: 'Digital micron gauge (T-01)', rfid: 'Tool tag out', cam: 'Person not identified', check: 'No checkout', res: 'review' },
+  ],
+  released: {},
+};
+const whValue = it => it.qty * it.cost;
+const whLow = () => WH.items.filter(i => i.qty < i.min);
+const whItem = sku => WH.items.find(i => i.sku === sku);
+const restockFor = v => v.stock.filter(s => s.qty < s.min && whItem(s.sku)).map(s => ({ s, need: s.min - s.qty + (s.tag === 'Tool tag' ? 0 : 1) }));
+const restockDue = () => VANS.filter(v => !WH.released[v.id] && restockFor(v).length);
+const whReview = () => WH.portal.filter(p => p.res === 'review').length;
+
+VIEWS.warehouse = () => {
+  const total = WH.items.reduce((s, i) => s + whValue(i), 0), low = whLow(), due = WH.inbound.filter(p => p.status === 'due');
+  const items = WH.items.filter(i => WH.zone === 'all' || i.zone === WH.zone);
+  const byZone = WH.zones.map(([z, n]) => [z, n, WH.items.filter(i => i.zone === z).reduce((s, i) => s + whValue(i), 0)]);
+  const maxZ = Math.max(...byZone.map(z => z[2]));
+  const statusPill = i => i.qty < i.min ? pill('bad', 'Below minimum') : i.qty <= i.min * 1.2 ? pill('warn', 'Near minimum') : i.idle > 60 ? pill('info-p', 'Slow moving') : pill('ok', 'OK');
+  view(`
+  <h1>Warehouse</h1><p class="lead">${WH.name}: stock by zone and bin, receiving against purchase orders, tonight's van restock and every movement through the doors.</p>
+  <div class="kpis" style="margin-top:16px">
+    <div class="kpi"><span class="v">${fmt$(total)}</span><span class="l">Stock value on hand</span><span class="note">${WH.items.length} SKUs in ${WH.zones.length} zones</span></div>
+    <a class="kpi ${low.length ? 'alert' : ''}" href="#warehouse" data-jump="stock"><span class="v">${low.length}</span><span class="l">Items below minimum</span><span class="note">${low.length ? 'Reorder requests needed' : 'All above minimum'}</span></a>
+    <a class="kpi" href="#warehouse" data-jump="inbound"><span class="v">${due.length}</span><span class="l">Deliveries due today</span><span class="note">Receive against the PO</span></a>
+    <a class="kpi" href="#warehouse" data-jump="restock"><span class="v">${restockDue().length}</span><span class="l">Vans to restock tonight</span><span class="note">From today's usage</span></a>
+    <a class="kpi ${whReview() ? 'alert' : ''}" href="#warehouse" data-jump="portal"><span class="v">${whReview()}</span><span class="l">Door movements to review</span><span class="note">RFID and camera at the doors</span></a>
+  </div>
+  <div class="grid g-side" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>Stock value by zone</h2>${info('Zones', 'The warehouse uses the same storage hierarchy as the rest of WAMWins: warehouse, zone, shelf and bin, with no limit on depth.')}</div>
+      <div class="list">${byZone.map(z => `<button class="score" type="button" data-zone="${z[0]}" style="background:none;border:0;padding:4px 0;text-align:left"><div><div class="small">Zone ${z[0]} · ${z[1]}</div><div class="bar"><i style="width:${Math.round(z[2] / maxZ * 100)}%"></i></div></div><b>${fmt$(z[2])}</b></button>`).join('')}</div></section>
+    <section class="panel" id="sec-restock"><div class="panel-head"><h2>Tonight's van restock</h2>${info('Restock', 'Each van is refilled to its minimum from what it used today, so technicians start the morning with what their usual calls need instead of driving to a supply house.')}</div>
+      <div class="list">${VANS.filter(v => restockFor(v).length).map(v => { const r = restockFor(v), done = WH.released[v.id]; return `<div class="item"><div class="top"><b>${v.id} · ${TECHS.find(t => t.id === v.tech).name}</b>${done ? pill('ok', 'Released') : pill('warn', r.length + ' lines')}</div>
+        <span class="small muted">${r.map(x => `${x.need} × ${x.s.name}`).join(' · ')}</span>${done ? '' : `<div><button class="btn sm primary" type="button" data-release="${v.id}">Pick and release</button></div>`}</div>`; }).join('') || '<p class="muted">Every van is at its minimum.</p>'}</div></section>
+  </div>
+  <section class="panel" id="sec-inbound" style="margin-top:16px"><div class="panel-head"><h2>Receiving</h2>${info('Three-way match', 'Receiving records what arrived against the purchase order. When the supplier invoice comes in, WAMWins matches PO, receipt and invoice before anyone is paid. A price difference is held for accounts payable.')}</div>
+    <div class="table-wrap"><table><thead><tr><th>PO</th><th>Supplier</th><th>Lines</th><th>Expected</th><th>Status</th><th>Invoice match</th><th></th></tr></thead><tbody>
+    ${WH.inbound.map((p, i) => `<tr><td><b>${p.po}</b></td><td>${p.supplier}</td><td class="small">${p.lines.map(l => `${l[1]} × ${whItem(l[0])?.name || l[0]}`).join('<br>')}</td><td class="small">${p.eta}</td>
+      <td>${p.status === 'received' ? pill('ok', 'Received') : p.status === 'request' ? pill('info-p', 'Awaiting approval') : pill('warn', 'Due')}</td>
+      <td>${p.match === 'ok' ? pill('ok', 'Matched') : p.match === 'hold' ? pill('bad', 'Price differs: on hold') : pill('plain', p.status === 'request' ? 'Not ordered yet' : 'Waiting for invoice')}</td>
+      <td>${p.status === 'due' ? `<button class="btn sm primary" type="button" data-receive="${i}">Receive</button>` : ''}</td></tr>`).join('')}
+    </tbody></table></div></section>
+  <section class="panel" id="sec-stock" style="margin-top:16px"><div class="panel-head"><h2>Stock</h2><span class="sub">${items.length} of ${WH.items.length} SKUs</span></div>
+    <div class="row" style="margin-bottom:12px"><button class="btn sm ${WH.zone === 'all' ? 'blue' : ''}" type="button" data-zone="all">All zones</button>${WH.zones.map(([z, n]) => `<button class="btn sm ${WH.zone === z ? 'blue' : ''}" type="button" data-zone="${z}">${z} · ${n}</button>`).join('')}</div>
+    <div class="table-wrap"><table><thead><tr><th>Item</th><th>SKU</th><th>Bin</th><th class="num">On hand</th><th class="num">Min / max</th><th class="num">Value</th><th class="num">Days idle</th><th>Status</th><th></th></tr></thead><tbody>
+    ${items.map(i => `<tr><td>${i.name}</td><td class="muted">${i.sku}</td><td class="small">${i.bin}</td><td class="num">${i.qty}</td><td class="num">${i.min} / ${i.max}</td><td class="num">${fmt$(whValue(i))}</td><td class="num">${i.idle}</td><td>${statusPill(i)}</td>
+      <td>${i.qty < i.min && !i.requested ? `<button class="btn sm" type="button" data-reorder="${i.sku}">Request purchase</button>` : i.requested ? '<span class="small muted">Requested</span>' : ''}</td></tr>`).join('')}
+    </tbody></table></div></section>
+  <section class="panel" id="sec-portal" style="margin-top:16px"><div class="panel-head"><h2>Door movements today</h2>${info('Doors', 'RFID readers at each door record tagged items leaving or entering; the camera shows who carried them. A tool leaving with no checkout or release slip goes to review.')}</div>
+    <div class="table-wrap"><table><thead><tr><th>Time</th><th>Door</th><th>Item</th><th>RFID</th><th>Camera</th><th>Checkout</th><th>Result</th><th></th></tr></thead><tbody>
+    ${WH.portal.map((e, i) => `<tr><td class="muted">${e.t}</td><td class="small">${e.door}</td><td>${e.item}</td><td class="small">${e.rfid}</td><td class="small">${e.cam}</td><td class="small">${e.check}</td>
+      <td>${e.res === 'ok' ? pill('ok', 'Matched') : e.res === 'fixed' ? pill('ok', 'Checked out late') : e.res === 'loss' ? pill('bad', 'Flagged loss') : pill('warn', 'Review')}</td>
+      <td>${e.res === 'review' ? `<div class="row"><button class="btn sm" type="button" data-pfix="${i}">Check out to a van</button><button class="btn sm danger" type="button" data-ploss="${i}">Flag loss</button></div>` : ''}</td></tr>`).join('')}
+    </tbody></table></div></section>`);
+  const V = el('view');
+  V.querySelectorAll('[data-jump]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); el('sec-' + a.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+  V.querySelectorAll('[data-zone]').forEach(b => b.onclick = () => { WH.zone = b.dataset.zone; VIEWS.warehouse(); el('sec-stock').scrollIntoView({ block: 'start' }); });
+  V.querySelectorAll('[data-release]').forEach(b => b.onclick = () => {
+    const v = VANS.find(x => x.id === b.dataset.release), lines = restockFor(v);
+    lines.forEach(({ s, need }) => { const w = whItem(s.sku), n = Math.min(need, w.qty); w.qty -= n; s.qty += n; w.idle = 0; });
+    WH.released[v.id] = true; v.events.push({ t: hhmm(NOW_MIN), item: 'Restock from warehouse', rfid: lines.length + ' tags in', cam: 'Loading seen', pr: 'Release slip RS-' + (3310 + Object.keys(WH.released).length), res: 'ok' });
+    toast(`${v.id} restock released: ${lines.length} lines. Van stock updated.`); renderNav(); VIEWS.warehouse();
+  });
+  V.querySelectorAll('[data-receive]').forEach(b => b.onclick = () => {
+    const p = WH.inbound[+b.dataset.receive];
+    p.lines.forEach(([sku, n]) => { const w = whItem(sku); if (w) { w.qty += n; w.idle = 0; } });
+    p.status = 'received'; p.eta = 'Received ' + hhmm(NOW_MIN); p.match = p.priceDiff ? 'hold' : 'ok';
+    toast(p.priceDiff ? `${p.po} received. Invoice price differs from the PO, so payment is on hold for accounts payable.` : `${p.po} received and matched. Stock updated.`); renderNav(); VIEWS.warehouse();
+  });
+  V.querySelectorAll('[data-reorder]').forEach(b => b.onclick = () => {
+    const w = whItem(b.dataset.reorder); w.requested = true;
+    WH.inbound.push({ po: 'PR-' + (9100 + WH.inbound.length), supplier: 'Quotes requested', lines: [[w.sku, w.max - w.qty]], eta: '—', status: 'request', match: null });
+    toast(`Purchase request for ${w.max - w.qty} × ${w.name} sent to purchasing.`); VIEWS.warehouse();
+  });
+  V.querySelectorAll('[data-pfix]').forEach(b => b.onclick = () => { const e = WH.portal[+b.dataset.pfix]; e.res = 'fixed'; e.check = 'Checked out to V-101'; toast('Tool checked out to V-101 and closed.'); renderNav(); VIEWS.warehouse(); });
+  V.querySelectorAll('[data-ploss]').forEach(b => b.onclick = () => { WH.portal[+b.dataset.ploss].res = 'loss'; toast('Flagged as a loss. The inventory lead and manager are notified.'); renderNav(); VIEWS.warehouse(); });
+};
+
+addEventListener('hashchange', go); go();
+})();
+</script>
+
+<script>
+// ---------- installable app (PWA): service worker for offline use, Install button with a fallback guide
+(() => {
+  const btn = document.getElementById('install');
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  let deferred = null;
+  const say = msg => { const box = document.getElementById('toasts'), t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; box.append(t); setTimeout(() => t.remove(), 5000); return t; };
+  if (!standalone) btn.hidden = false;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
+  addEventListener('appinstalled', () => { deferred = null; btn.hidden = true; say('WAMWins Trades is installed.'); });
+  btn.addEventListener('click', async () => {
+    if (deferred) { deferred.prompt(); const r = await deferred.userChoice; if (r.outcome === 'accepted') btn.hidden = true; deferred = null; return; }
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const back = document.createElement('div'); back.className = 'modal-back';
+    back.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="it"><h2 id="it">Install WAMWins Trades</h2>' +
+      (ios ? '<p class="lead">In Safari, tap the Share button, then <b>Add to Home Screen</b>.</p>'
+           : '<p class="lead">Your browser did not offer an install prompt here. Use its menu instead:</p><ul class="lead" style="margin:0;padding-left:18px"><li><b>Android, Chrome:</b> menu (three dots) then <b>Install app</b> or <b>Add to Home screen</b>.</li><li><b>Computer, Chrome or Edge:</b> the install icon at the right of the address bar.</li><li><b>iPhone or iPad:</b> open this page in Safari, Share, then <b>Add to Home Screen</b>.</li></ul>') +
+      '<div class="row" style="justify-content:flex-end"><button class="btn primary" type="button">Got it</button></div></div>';
+    const ok = back.querySelector('button'), close = () => { back.remove(); btn.focus(); };
+    ok.onclick = close; back.addEventListener('click', e => { if (e.target === back) close(); });
+    back.addEventListener('keydown', e => { if (e.key === 'Escape') close(); if (e.key === 'Tab') { e.preventDefault(); ok.focus(); } });
+    document.body.append(back); ok.focus();
+  });
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      const offer = w => { const t = say('A new version of the demo is ready. '); const b = document.createElement('button'); b.textContent = 'Reload'; b.style.cssText = 'margin-left:8px;background:none;border:0;color:#fff;font-weight:700;text-decoration:underline'; b.onclick = () => w.postMessage('SKIP_WAITING'); t.append(b); };
+      if (reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
+      reg.addEventListener('updatefound', () => { const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) offer(w); }); });
+    }).catch(() => {});
+    // reload only when an installed copy switches to a new version, never on the very first visit
+    const hadController = !!navigator.serviceWorker.controller; let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController && !reloaded) { reloaded = true; location.reload(); } });
+  }
+})();
+</script>
+</body>
+</html>

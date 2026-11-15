@@ -161,6 +161,19 @@ select, input[type="number"] { border: 1.5px solid var(--line); background: var(
 .modal-back { position: fixed; inset: 0; background: rgba(8,14,32,.55); z-index: 60; display: grid; place-items: center; padding: 16px }
 .modal { background: var(--surface); border-radius: var(--r); max-width: 460px; width: 100%; padding: 20px; display: grid; gap: 12px; border-top: 4px solid var(--red) }
 .section-gap { display: grid; gap: 16px }
+/* customer and field tools */
+.newtag { font-size: 10.5px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; background: var(--yellow); color: #0E1B3D; border-radius: 999px; padding: 1px 8px; vertical-align: 2px; margin-left: 4px }
+.item.opt { cursor: pointer }
+label.item { cursor: pointer } label.item .top { width: 100% }
+.phone { max-width: 360px; margin: 0 auto; border: 8px solid var(--ink); border-radius: 28px; overflow: hidden; background: var(--bg) }
+.phone-bar { background: #0B49D1; color: #fff; padding: 10px 14px; display: flex; justify-content: space-between; align-items: baseline; font-size: 13px }
+.phone-bar span { font-size: 11.5px; color: #DCE6FF }
+.phone-body { padding: 12px; display: grid; gap: 4px; min-height: 300px; align-content: start }
+.phone-body input[type="text"] { border: 1.5px solid var(--line); background: var(--surface); border-radius: var(--r-s); padding: 8px 10px; min-height: 40px; width: 100% }
+.sig { font-family: "Brush Script MT", "Segoe Script", cursive; font-size: 19px; color: var(--blue) }
+.transcript { background: var(--surface-2); border-radius: var(--r-s); padding: 10px 12px; display: grid; gap: 6px; max-height: 260px; overflow-y: auto }
+textarea { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--r-s); padding: 8px 10px; width: 100%; resize: vertical }
+.item.draft { gap: 6px }
 @media (max-width: 1080px) { .g3 { grid-template-columns: repeat(2, minmax(0, 1fr)) } .g-side { grid-template-columns: minmax(0, 1fr) } }
 @media (max-width: 820px) {
   .app { grid-template-columns: minmax(0, 1fr) }
@@ -195,6 +208,13 @@ select, input[type="number"] { border: 1.5px solid var(--line); background: var(
 // ============================================================ sample data
 const RATE = { laborCost: 48, overheadPct: 0.18 };           // per hour; overhead on materials + labor
 const NOW_MIN = 10 * 60 + 30;                                // the demo day runs at 10:30 AM
+// The demo day is the day the app is opened; every sample date is counted from it.
+const TODAY = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })();
+const dayOff = n => { const d = new Date(TODAY); d.setDate(d.getDate() + n); return d; };
+const yrOff = (n, y) => { const d = dayOff(n); d.setFullYear(d.getFullYear() + y); return d; };
+const fmtDay = (n, o = { month: 'short', day: 'numeric', year: 'numeric' }) => (typeof n === 'number' ? dayOff(n) : n).toLocaleDateString('en-US', o);
+const fmtMD = n => fmtDay(n, { month: 'short', day: 'numeric' });
+const fmtMY = d => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 const fmt$ = n => '$' + Math.round(n).toLocaleString('en-US');
 const hhmm = m => { const h = Math.floor(m / 60), mm = m % 60, ap = h >= 12 ? 'PM' : 'AM'; return `${((h + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${ap}`; };
 const el = id => document.getElementById(id);
@@ -337,9 +357,12 @@ const ICON = {
   monitoring: '<path d="M3 12h4l2-6 4 12 2-6h6"/>',
   cost: '<path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
 };
-const ROUTES = [['dashboard', 'Central dashboard'], ['library', 'ICT Library'], ['dispatch', 'Dispatch'], ['warehouse', 'Warehouse'], ['inventory', 'Van inventory'], ['monitoring', 'Monitoring'], ['cost', 'Cost vs ServiceTitan']];
+ICON.customers = '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18.5 20a6 6 0 0 0-2.5-5"/>';
+ICON.estimates = '<path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h4"/><path d="M4 7v14h11" opacity=".5"/>';
+ICON.field = '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 18.5h4M9.5 8.5l2 2 3.5-4"/>';
+const ROUTES = [['dashboard', 'Central dashboard'], ['library', 'ICT Library'], ['dispatch', 'Dispatch'], ['customers', 'Customers'], ['estimates', 'Estimates & portal'], ['field', 'Field & AI'], ['warehouse', 'Warehouse'], ['inventory', 'Van inventory'], ['monitoring', 'Monitoring'], ['cost', 'Cost vs ServiceTitan']];
 function renderNav() {
-  const badge = { dispatch: QUEUE.length, warehouse: whLow().length + whReview(), inventory: reviewCount(), monitoring: openInc() };
+  const badge = { dispatch: QUEUE.length, customers: fuOverdue().length, field: DRAFTS.filter(d => d.status === 'review').length + CALLS.filter(c => c.status === 'review').length, warehouse: whLow().length + whReview(), inventory: reviewCount(), monitoring: openInc() };
   el('nav').innerHTML = ROUTES.map(([k, l]) => `<a href="#${k}" ${STATE.route === k ? 'aria-current="page"' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>${l}${badge[k] ? `<span class="count" aria-label="${badge[k]} need attention">${badge[k]}</span>` : ''}</a>`).join('');
 }
 function go() {
@@ -348,7 +371,7 @@ function go() {
   renderNav(); VIEWS[STATE.route](); el('main').focus({ preventScroll: true }); window.scrollTo(0, 0);
   el('nav').querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
 }
-el('clock').textContent = 'Friday, Nov 13, 2026 · ' + hhmm(NOW_MIN) + ' (demo time)';
+el('clock').textContent = fmtDay(0, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }) + ' · ' + hhmm(NOW_MIN) + ' (demo time)';
 
 // ============================================================ views
 const VIEWS = {};
@@ -366,6 +389,7 @@ VIEWS.dashboard = () => {
     <a class="kpi ${openInc() ? 'alert' : ''}" href="#monitoring"><span class="v">${openInc()}</span><span class="l">Open Loxone incidents</span><span class="note">${openInc() ? 'Alarm sent by app, email, SMS' : 'All monitored sites normal'}</span></a>
     <a class="kpi ${reviewCount() ? 'alert' : ''}" href="#inventory"><span class="v">${reviewCount()}</span><span class="l">Inventory movements to review</span><span class="note">RFID and camera disagree</span></a>
     <a class="kpi ${whLow().length ? 'alert' : ''}" href="#warehouse"><span class="v">${whLow().length}</span><span class="l">Warehouse items below minimum</span><span class="note">${fmt$(WH.items.reduce((t, i) => t + i.qty * i.cost, 0))} stock on hand</span></a>
+    <a class="kpi ${fuOverdue().length ? 'alert' : ''}" href="#customers"><span class="v">${fmt$(FOLLOW.filter(f => f.status === 'open' && f.kind === 'Invoice').reduce((s, f) => s + f.amt, 0))}</span><span class="l">Unpaid invoices</span><span class="note">${fuOverdue().length} past 7 days · reminders running</span></a>
     <a class="kpi" href="#dispatch"><span class="v">38 min</span><span class="l">Avg dispatch to arrival</span><span class="note">This week, sample data</span></a>
     <a class="kpi" href="#library"><span class="v">${fmt$(allRev)}</span><span class="l">Work sold this week</span><span class="note">Sample data</span></a>
   </div>
@@ -700,6 +724,246 @@ VIEWS.warehouse = () => {
   });
   V.querySelectorAll('[data-pfix]').forEach(b => b.onclick = () => { const e = WH.portal[+b.dataset.pfix]; e.res = 'fixed'; e.check = 'Checked out to V-101'; toast('Tool checked out to V-101 and closed.'); renderNav(); VIEWS.warehouse(); });
   V.querySelectorAll('[data-ploss]').forEach(b => b.onclick = () => { WH.portal[+b.dataset.ploss].res = 'loss'; toast('Flagged as a loss. The inventory lead and manager are notified.'); renderNav(); VIEWS.warehouse(); });
+};
+
+// ============================================================ customer and field tools (sample data)
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const newTag = '<span class="newtag">New</span>';
+
+// 1. Follow-ups: day 3 email, day 7 email + SMS, day 14 call task for the office
+const FU_RULE = [[3, 'Email'], [7, 'Email + SMS'], [14, 'Office call task']];
+const FOLLOW = [
+  { id: 'INV-5498', kind: 'Invoice', cust: 'Marina Tower', what: 'PEX manifold repair', amt: 1920, days: 16, sms: true, log: ['Day 3 email', 'Day 7 email + SMS', 'Day 14 call task to Dana (office)'], status: 'open' },
+  { id: 'INV-5512', kind: 'Invoice', cust: 'Reyes residence', what: 'Thermostat replacement', amt: 385, days: 9, sms: true, log: ['Day 3 email', 'Day 7 email + SMS'], status: 'open' },
+  { id: 'EST-7731', kind: 'Estimate', cust: 'Shell Cove HOA', what: 'Drain line replacement, building C', amt: 2140, days: 5, sms: false, log: ['Day 3 email'], status: 'open' },
+  { id: 'EST-7740', kind: 'Estimate', cust: 'Gomez residence', what: '50-gal water heater replacement', amt: 2185, days: 2, sms: true, log: [], status: 'open' },
+];
+const fuOverdue = () => FOLLOW.filter(f => f.status === 'open' && f.days >= 7);
+const fuNext = f => { const n = FU_RULE.find(r => r[0] > f.days); return n ? `Day ${n[0]}: ${n[1]}${n[1].includes('SMS') && !f.sms ? ' (email only, SMS opted out)' : ''}` : 'Sequence finished'; };
+
+// 2. Customer equipment, one record per unit per site
+const EQUIP = [
+  { site: 'Okafor residence', addr: 'West Palm Beach', loxone: null, units: [
+    { id: 'EQ-3301', name: '3-ton heat pump, 16 SEER2', serial: 'HP36-2611-0447', installed: fmtDay(0) + ' (J-24120)', ref: 'R-454B', warranty: `Parts to ${fmtMY(yrOff(0, 10))} · labor to ${fmtMY(yrOff(0, 2))}`, src: 'Created from receiving: serial scanned on PO-8812', hist: [[fmtDay(0), 'J-24120', 'Installed, replacing the 2009 unit; brazed joints pressure-tested']] },
+    { id: 'EQ-3302', name: 'Air handler, 3-ton', serial: 'AH36-2611-1180', installed: fmtDay(0) + ' (J-24120)', ref: '—', warranty: `Parts to ${fmtMY(yrOff(0, 10))}`, src: 'Created from receiving', hist: [[fmtDay(0), 'J-24120', 'Installed with new line set']] }] },
+  { site: 'Harbor Plaza Offices', addr: 'Riviera Beach', loxone: 'Harbor Plaza Offices', units: [
+    { id: 'EQ-2140', name: 'Rooftop unit RTU-2, 10-ton', serial: 'RT10-1904-0221', installed: 'Apr 2019', ref: 'R-410A', warranty: 'Parts ended Apr 2024', src: 'Entered from site survey', hist: [[fmtDay(0), 'J-24117', 'Condenser fan motor failed; replacement on order'], [fmtDay(-164), 'J-23861', 'Condenser fan motor replaced'], [fmtDay(-640), 'J-23402', 'Condenser fan motor replaced']] },
+    { id: 'EQ-2141', name: 'Smart water valve, main', serial: 'LX-VLV-55819', installed: fmtMY(dayOff(-254)), ref: '—', warranty: `To ${fmtMY(yrOff(-254, 2))}`, src: 'Synced from the Loxone Miniserver', hist: [[fmtDay(-254), 'J-22810', 'Installed with leak sensors on the 3rd floor riser']] }] },
+  { site: 'Lopez residence', addr: 'Lake Worth', loxone: null, units: [
+    { id: 'EQ-1877', name: 'AC condenser, 2.5-ton', serial: 'AC30-1405-3392', installed: 'May 2014', ref: 'R-410A', warranty: 'Ended', src: 'Entered by technician', hist: [[fmtDay(0), 'J-24122', 'Capacitor and contactor replaced'], [fmtDay(-461), 'J-24001', 'Capacitor and contactor replaced']] }] },
+];
+STATE.eqSite = 'Okafor residence'; STATE.eqUnit = 'EQ-3301';
+
+// 5. Maintenance agreements
+const AGREE = [
+  { id: 'MA-118', cust: 'Bayview Condos (12 units)', plan: 'Commercial PM, quarterly', fee: 1440, every: 'Quarterly', next: fmtMD(19), renew: fmtDay(108), made: false },
+  { id: 'MA-131', cust: 'Harbor Plaza Offices', plan: 'Rooftop units, quarterly', fee: 960, every: 'Quarterly', next: fmtMD(26), renew: fmtDay(200), made: false },
+  { id: 'MA-147', cust: 'Okafor residence', plan: 'Comfort Club, 2 visits a year', fee: 19, every: 'Twice a year', next: fmtMY(dayOff(180)), renew: fmtDay(17), made: true, renewDue: true },
+  { id: 'MA-152', cust: 'Lopez residence', plan: 'Comfort Club, 2 visits a year', fee: 19, every: 'Twice a year', next: fmtMD(31), renew: fmtDay(63), made: false },
+];
+
+// 4. Estimate designer: price-book lines for EST-7740
+const PRICEBOOK = {
+  good: { name: 'Good', title: '50-gal gas water heater', lines: [['50-gal gas water heater, standard', 1290], ['Install, haul-away, venting check', 520], ['Permit and inspection', 175]], warr: '6-year tank · 1-year labor' },
+  better: { name: 'Better', title: '50-gal high-efficiency', lines: [['50-gal high-efficiency gas water heater', 1640], ['Install, haul-away, venting check', 520], ['Thermal expansion tank', 165], ['Permit and inspection', 175]], warr: '10-year tank · 3-year labor' },
+  best: { name: 'Best', title: 'Tankless, 199k BTU', lines: [['Tankless gas water heater, 199k BTU', 2380], ['Install, gas line resize, venting', 1150], ['Isolation valves and descaling kit', 210], ['Permit and inspection', 175]], warr: '15-year heat exchanger · 5-year labor' },
+};
+const ADDONS = [['leak', 'Leak sensor and automatic shut-off valve, linked to Loxone', 395], ['pan', 'Drain pan and overflow line', 85]];
+const EST = { id: 'EST-7740', cust: 'Gomez residence', ver: 2, pick: 'better', addons: { leak: true }, member: false, sent: false, signed: null };
+const estTotal = k => { const base = PRICEBOOK[k].lines.reduce((s, l) => s + l[1], 0) + ADDONS.filter(a => EST.addons[a[0]]).reduce((s, a) => s + a[2], 0); return EST.member ? Math.round(base * 0.85) : base; };
+STATE.portal = 'approve'; STATE.paid = false;
+
+// 6, 7, 8. Field capture, drafts for review, AI phone answering
+const TIME = [{ job: 'J-24117', what: 'Drive to Harbor Plaza', s: 8 * 60 + 15, e: 8 * 60 + 40 }, { job: 'J-24117', what: 'Diagnosis on site', s: 8 * 60 + 40, e: 9 * 60 + 30 }, { job: 'J-24117', what: 'Paperwork, quotes call', s: 9 * 60 + 30, e: 9 * 60 + 50 }];
+STATE.clockIn = null;
+const RECEIPTS = [{ id: 'RC-201', t: '7:48 AM', store: 'Supply house counter, Riviera Beach', items: 'Refrigerant leak sealant, 2 cans', amt: 54.9, job: 'J-24117', to: 'Job cost', status: 'filed' }];
+const SAMPLE_RECEIPT = { store: 'Supply house counter, West Palm Beach', items: 'Run capacitor 5 µF (2), motor mount kit', amt: 58.36, job: 'J-24117', to: 'Job cost + V-101 stock' };
+const DRAFTS = [
+  { id: 'D-1', kind: 'Completion report', job: 'J-24122 · Lopez residence', notes: 'cap 45/5 bulged, contactor pitted. replaced both. amps normal. 12 deg split ok. told cust unit is 12 yrs old', status: 'review',
+    text: 'Work completed: replaced the dual run capacitor (45/5 µF, the old one was bulging) and the 2-pole 30 A contactor (contacts were pitted). After the repair, running amps are normal and the temperature split across the coil is 12 °F, within the normal range. Note for the customer: the condenser is 12 years old; we recommend planning for a replacement within the next few years.' },
+  { id: 'D-2', kind: 'Invoice', job: 'J-24122 · Lopez residence', notes: 'flat rate no cooling repair, member', status: 'review',
+    text: 'No-cooling repair, flat rate: $465.00. Comfort Club member discount (15%): −$69.75. Total due: $395.25. Parts: dual run capacitor 45/5 µF, contactor 2-pole 30 A.' },
+  { id: 'D-3', kind: 'Customer message (SMS)', job: 'J-24122 · Lopez residence', notes: 'send thanks + invoice + remind next PM ' + fmtMD(31).toLowerCase(), status: 'review',
+    text: 'Hi Ms. Lopez, this is Cassidy Air. Your AC is cooling again: we replaced the capacitor and contactor. Your invoice for $395.25 is ready to view and pay online. Your next Comfort Club visit is ' + fmtDay(31, { month: 'long', day: 'numeric' }) + '. Reply STOP to opt out of texts.' },
+];
+const CALLS = [
+  { id: 'C-881', t: '7:52 AM', who: 'Nguyen residence, Palm Beach Gardens', dur: '2:41', summary: 'Water heater leaking from the bottom; water on the garage floor. Customer shut off the cold supply.', out: 'Created Q-551 (High)', status: 'done',
+    tr: [['AI', 'Thanks for calling Cassidy Air. This call is recorded for service records. How can I help?'], ['Caller', 'My water heater is leaking all over the garage.'], ['AI', 'Sorry to hear that. Have you been able to turn off the cold water supply on top of the heater?'], ['Caller', 'Yes, I did that.'], ['AI', 'Good. I can get a plumber to you this morning. Is this the address on Holly Drive?']] },
+  { id: 'C-884', t: '10:12 AM', who: 'Coral Dental, Riviera Beach', dur: '1:58', summary: 'AC keeps turning on and off; office is warm. Asked for a technician today.', out: 'Created Q-552 (Normal)', status: 'done',
+    tr: [['AI', 'Thanks for calling Cassidy Air. This call is recorded for service records. How can I help?'], ['Caller', 'Our AC keeps clicking on and off and the office is getting warm.'], ['AI', 'I see Coral Dental is a monitored site; our system also shows frequent compressor starts. I can book a technician today.']] },
+  { id: 'C-886', t: '10:26 AM', who: 'Patel residence, Jupiter (new customer)', dur: '3:05', summary: 'No hot water since last night; gas tank water heater, about 10 years old. Wants a callback about a replacement price.', out: 'Needs a person: callback requested', status: 'review',
+    tr: [['AI', 'Thanks for calling Cassidy Air. This call is recorded for service records. How can I help?'], ['Caller', 'We have no hot water since last night.'], ['AI', 'I can help with that. Is it a tank or a tankless water heater, and do you know roughly how old it is?'], ['Caller', 'Tank, gas, maybe ten years. Honestly I might just want a price to replace it.'], ['AI', 'Understood. I will have our office call you back with options today, and I can also book a technician to look at it.']] },
+];
+STATE.call = 'C-886';
+
+VIEWS.customers = () => {
+  const open = FOLLOW.filter(f => f.status === 'open'), site = EQUIP.find(s => s.site === STATE.eqSite), unit = site.units.find(u => u.id === STATE.eqUnit) || site.units[0];
+  const mrr = AGREE.reduce((s, a) => s + (a.every === 'Quarterly' ? a.fee / 3 : a.fee), 0);
+  view(`
+  <h1>Customers</h1><p class="lead">Who owes what, which agreements need visits, and every unit installed at each customer's site.</p>
+  <div class="kpis" style="margin-top:16px">
+    <div class="kpi ${fuOverdue().length ? 'alert' : ''}"><span class="v">${fmt$(open.filter(f => f.kind === 'Invoice').reduce((s, f) => s + f.amt, 0))}</span><span class="l">Unpaid invoices</span><span class="note">${open.filter(f => f.kind === 'Invoice').length} invoice${open.filter(f => f.kind === 'Invoice').length === 1 ? '' : 's'} · reminders running</span></div>
+    <div class="kpi"><span class="v">${fmt$(open.filter(f => f.kind === 'Estimate').reduce((s, f) => s + f.amt, 0))}</span><span class="l">Estimates waiting for approval</span><span class="note">${open.filter(f => f.kind === 'Estimate').length} sent to customers</span></div>
+    <div class="kpi"><span class="v">${AGREE.length}</span><span class="l">Maintenance agreements</span><span class="note">${fmt$(mrr)} a month in plan fees</span></div>
+    <div class="kpi"><span class="v">${EQUIP.reduce((s, x) => s + x.units.length, 0)}</span><span class="l">Units on record</span><span class="note">Sample sites</span></div>
+  </div>
+  <section class="panel" id="sec-follow" style="margin-top:16px"><div class="panel-head"><h2>Automatic follow-ups ${newTag}</h2>${info('Follow-ups', 'Unpaid invoices and unapproved estimates get reminders on a schedule: day 3 email, day 7 email and SMS, day 14 a call task for the office. A reminder stops as soon as the customer pays or approves. Customers who opted out of SMS get email only.')}</div>
+    <p class="small muted" style="margin-bottom:8px">Schedule: ${FU_RULE.map(r => `day ${r[0]}: ${r[1].replace('Office', 'office').replace('Email', 'email')}`).join(' · ')}</p>
+    <div class="table-wrap"><table><thead><tr><th>Record</th><th>Customer</th><th class="num">Amount</th><th class="num">Days</th><th>Sent so far</th><th>Next</th><th></th></tr></thead><tbody>
+    ${FOLLOW.map(f => `<tr><td><b>${f.id}</b><div class="small muted">${f.kind} · ${f.what}</div></td><td>${f.cust}${f.sms ? '' : '<div class="small muted">SMS opted out</div>'}</td><td class="num">${fmt$(f.amt)}</td><td class="num">${f.status === 'open' ? f.days : '—'}</td>
+      <td class="small">${f.log.length ? f.log.join('<br>') : '<span class="muted">Nothing yet</span>'}</td>
+      <td>${f.status === 'paid' ? pill('ok', 'Paid, reminders stopped') : f.status === 'approved' ? pill('ok', 'Approved, reminders stopped') : f.days >= 7 ? pill('bad', fuNext(f)) : pill('plain', fuNext(f))}</td>
+      <td>${f.status === 'open' ? `<div class="row"><button class="btn sm" type="button" data-remind="${f.id}">Remind now</button>${f.kind === 'Invoice' ? `<button class="btn sm" type="button" data-markpaid="${f.id}">Mark paid</button>` : ''}</div>` : ''}</td></tr>`).join('')}
+    </tbody></table></div></section>
+  <section class="panel" id="sec-agree" style="margin-top:16px"><div class="panel-head"><h2>Maintenance agreements ${newTag}</h2>${info('Agreements', 'Each plan creates its own visits when they come due, so they land in the dispatch queue without anyone re-typing them. Renewals get reminders 30 days ahead. Members get 15% off repairs, applied automatically on estimates and invoices.')}</div>
+    <div class="table-wrap"><table><thead><tr><th>Plan</th><th>Customer</th><th>Visits</th><th class="num">Fee</th><th>Next visit</th><th>Renewal</th><th></th></tr></thead><tbody>
+    ${AGREE.map(a => `<tr><td><b>${a.id}</b><div class="small muted">${a.plan}</div></td><td>${a.cust}</td><td class="small">${a.every}</td><td class="num">${fmt$(a.fee)}${a.every === 'Quarterly' ? '/qtr' : '/mo'}</td>
+      <td>${a.made ? pill('ok', a.next + (a.inQueue ? ': in queue' : '')) : a.next}</td><td>${a.renewDue ? pill('warn', a.renew + ': due soon') : a.renewSent ? pill('ok', 'Reminder sent') : `<span class="small">${a.renew}</span>`}</td>
+      <td><div class="row">${a.made ? '' : `<button class="btn sm primary" type="button" data-mkvisit="${a.id}">Create visit</button>`}${a.renewDue ? `<button class="btn sm" type="button" data-renew="${a.id}">Send renewal</button>` : ''}</div></td></tr>`).join('')}
+    </tbody></table></div></section>
+  <div class="grid g-side" id="sec-equip" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>Equipment at ${site.site} ${newTag}</h2>${info('Equipment records', 'One record per unit: model, serial, install date, refrigerant, warranty and every visit. Serials scanned at receiving create the record when the unit is installed, and Loxone devices sync in, so nobody types them twice. Technicians see this before they arrive.')}</div>
+      <div class="row" style="margin-bottom:12px">${EQUIP.map(s => `<button class="btn sm ${s.site === site.site ? 'blue' : ''}" type="button" data-eqsite="${s.site}">${s.site}</button>`).join('')}</div>
+      <div class="list">${site.units.map(u => `<button class="item ${u.id === unit.id ? 'sel' : ''}" type="button" data-equnit="${u.id}"><div class="top"><b>${u.name}</b><span class="small muted">${u.id}</span></div><span class="small muted">Serial ${u.serial} · installed ${u.installed}</span></button>`).join('')}</div>
+      ${site.loxone ? `<p class="small" style="margin-top:10px">${pill('info-p', 'Loxone site')} Live readings for this site are on <a href="#monitoring" style="color:var(--blue)">Monitoring</a>.</p>` : ''}</section>
+    <section class="panel"><div class="panel-head"><h2>${unit.name}</h2></div>
+      <dl class="kv"><dt>Serial</dt><dd>${unit.serial}</dd><dt>Installed</dt><dd>${unit.installed}</dd><dt>Refrigerant</dt><dd>${unit.ref}</dd><dt>Warranty</dt><dd>${unit.warranty}</dd><dt>Record source</dt><dd>${unit.src}</dd></dl>
+      <h3 style="margin:14px 0 6px">Service history</h3>
+      <div class="table-wrap"><table><tbody>${unit.hist.map(h => `<tr><td class="small muted" style="white-space:nowrap">${h[0]}</td><td><b class="small">${h[1]}</b><div class="small">${h[2]}</div></td></tr>`).join('')}</tbody></table></div>
+      ${unit.hist.length > 2 ? `<p class="small" style="margin-top:8px;color:var(--red)">Same part replaced ${unit.hist.length - 1} times: worth checking the cause before the next repair.</p>` : ''}</section>
+  </div>`);
+  const V = el('view');
+  V.querySelectorAll('[data-remind]').forEach(b => b.onclick = () => { const f = FOLLOW.find(x => x.id === b.dataset.remind); const ch = f.sms ? 'email and SMS' : 'email (SMS opted out)'; f.log.push(`Manual reminder ${hhmm(NOW_MIN)}, ${ch}`); toast(`Reminder for ${f.id} sent to ${f.cust} by ${ch}.`); VIEWS.customers(); });
+  V.querySelectorAll('[data-markpaid]').forEach(b => b.onclick = () => { const f = FOLLOW.find(x => x.id === b.dataset.markpaid); f.status = 'paid'; toast(`${f.id} marked paid. Its reminders stopped.`); renderNav(); VIEWS.customers(); });
+  V.querySelectorAll('[data-mkvisit]').forEach(b => b.onclick = () => {
+    const a = AGREE.find(x => x.id === b.dataset.mkvisit); a.made = true; a.inQueue = true;
+    QUEUE.push({ id: 'Q-' + (560 + QUEUE.length + AGREE.filter(x => x.made).length), title: 'Maintenance visit · ' + a.plan.split(',')[0], customer: a.cust, skill: 'HVAC', part: 'Filter 16x25x1', mins: 60, pri: 'Normal' });
+    toast(`Visit for ${a.cust} (${a.next}) created from ${a.id} and added to the dispatch queue.`); renderNav(); VIEWS.customers();
+  });
+  V.querySelectorAll('[data-renew]').forEach(b => b.onclick = () => { const a = AGREE.find(x => x.id === b.dataset.renew); a.renewDue = false; a.renewSent = true; toast(`Renewal reminder for ${a.id} sent to ${a.cust} by email and SMS.`); VIEWS.customers(); });
+  V.querySelectorAll('[data-eqsite]').forEach(b => b.onclick = () => { STATE.eqSite = b.dataset.eqsite; STATE.eqUnit = EQUIP.find(s => s.site === STATE.eqSite).units[0].id; VIEWS.customers(); el('sec-equip').scrollIntoView({ block: 'start' }); });
+  V.querySelectorAll('[data-equnit]').forEach(b => b.onclick = () => { STATE.eqUnit = b.dataset.equnit; VIEWS.customers(); el('sec-equip').scrollIntoView({ block: 'start' }); });
+};
+
+VIEWS.estimates = () => {
+  const P = PRICEBOOK, inv = FOLLOW.find(f => f.id === 'INV-5512');
+  const optCard = k => `<button class="item opt ${EST.pick === k ? 'sel' : ''}" type="button" data-pick="${k}" aria-pressed="${EST.pick === k}"><div class="top"><b>${P[k].name}: ${P[k].title}</b><b>${fmt$(estTotal(k))}</b></div>
+    <span class="small">${P[k].lines.map(l => l[0]).join(' · ')}</span><span class="small muted">${P[k].warr}</span></button>`;
+  const ptab = (k, l) => `<button class="btn sm ${STATE.portal === k ? 'blue' : ''}" type="button" data-ptab="${k}" aria-pressed="${STATE.portal === k}">${l}</button>`;
+  let portal;
+  if (STATE.portal === 'approve') {
+    portal = !EST.sent ? `<p class="small muted">Nothing to approve yet. Send ${EST.id} from the designer to see what the customer gets.</p>`
+      : EST.signed ? `<div class="formcard"><b>Approved and signed</b><span class="small">${P[EST.pick].name}: ${P[EST.pick].title} · ${fmt$(estTotal(EST.pick))}</span><span class="small">Signed by <span class="sig">${esc(EST.signed.name)}</span></span><span class="small muted">${EST.signed.at} · ${EST.signed.device} · estimate version ${EST.ver}</span></div><p class="small muted" style="margin-top:8px">Thank you. Cassidy Air will call to schedule the work.</p>`
+      : `<p class="small">Hi Ms. Gomez, here are your options for the water heater replacement.</p>
+        <div class="list" style="margin:10px 0">${Object.keys(P).map(k => `<label class="item portal-opt ${EST.pick === k ? 'sel' : ''}"><span class="top"><span><input type="radio" name="popt" value="${k}" ${EST.pick === k ? 'checked' : ''}> <b>${P[k].name}</b></span><b>${fmt$(estTotal(k))}</b></span><span class="small muted">${P[k].title} · ${P[k].warr}</span></label>`).join('')}</div>
+        <div class="field"><label for="signame">Type your full name to sign</label><input id="signame" type="text" autocomplete="name" placeholder="Full name"></div>
+        <label class="small" style="display:flex;gap:8px;align-items:flex-start;margin:8px 0"><input type="checkbox" id="sigok"> I approve this estimate and its terms.</label>
+        <button class="btn primary" type="button" id="sign" style="width:100%">Approve and sign</button>`;
+  } else if (STATE.portal === 'pay') {
+    portal = inv.status === 'paid' ? `<div class="formcard"><b>Paid: ${inv.id}</b><span class="small">${fmt$(inv.amt)} · receipt sent by email</span><span class="small muted">Reminders for this invoice stopped.</span></div>`
+      : STATE.payStep ? `<div class="formcard" style="border-style:solid"><b>Secure payment page</b><span class="small muted">Hosted by the payment processor. Card details are entered here and never reach WAMWins; WAMWins keeps only the processor's reference and the result.</span><span class="small">Demo: no card is entered.</span><button class="btn primary" type="button" id="paydone">Complete demo payment of ${fmt$(inv.amt)}</button></div>`
+      : `<p class="small">Invoice ${inv.id} · ${inv.what}</p><dl class="kv" style="margin:10px 0"><dt>Amount due</dt><dd><b>${fmt$(inv.amt)}</b></dd><dt>Sent</dt><dd>${inv.days} days ago</dd></dl><button class="btn primary" type="button" id="pay" style="width:100%">Pay ${fmt$(inv.amt)}</button>`;
+  } else {
+    portal = STATE.booked ? `<div class="formcard"><b>Request received</b><span class="small">${esc(STATE.booked)}</span><span class="small muted">You will get a text when a technician is assigned.</span></div>`
+      : `<div class="field"><label for="bk-what">What do you need?</label><select id="bk-what"><option>AC not cooling</option><option>Water heater problem</option><option>Leak or drain</option><option>Maintenance visit</option></select></div>
+        <div class="field" style="margin-top:8px"><label for="bk-when">Preferred time</label><select id="bk-when"><option>Today, as soon as possible</option><option>Tomorrow morning</option><option>Tomorrow afternoon</option></select></div>
+        <div class="field" style="margin-top:8px"><label for="bk-note">Anything else? (optional)</label><input id="bk-note" type="text" placeholder="Gate code, pets, best number"></div>
+        <button class="btn primary" type="button" id="book" style="width:100%;margin-top:10px">Request service</button>`;
+  }
+  view(`
+  <h1>Estimates & customer portal</h1><p class="lead">The office builds good, better and best options from the price book; the customer approves, signs, pays and books from their phone. Each action completes its step in the standard procedure.</p>
+  <div class="grid g-side" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>Estimate designer: ${EST.id} ${newTag}</h2>${info('Estimate designer', 'Options come from the price book, so prices stay consistent between technicians. The customer picks one; the approved option becomes the job and later the invoice without re-typing. Member pricing applies automatically.')}</div>
+      <p class="small muted" style="margin-bottom:10px">${EST.cust} · 50-gal water heater replacement · version ${EST.ver}</p>
+      <div class="list">${Object.keys(P).map(optCard).join('')}</div>
+      <h3 style="margin:14px 0 6px">Add-ons for every option</h3>
+      <div class="list">${ADDONS.map(a => `<label class="row small" style="gap:8px"><input type="checkbox" data-addon="${a[0]}" ${EST.addons[a[0]] ? 'checked' : ''} ${EST.sent ? 'disabled' : ''}> ${a[1]} · ${fmt$(a[2])}</label>`).join('')}
+        <label class="row small" style="gap:8px"><input type="checkbox" id="member" ${EST.member ? 'checked' : ''} ${EST.sent ? 'disabled' : ''}> Comfort Club member pricing (15% off)</label></div>
+      <div class="row" style="margin-top:14px;justify-content:space-between"><span>${EST.signed ? pill('ok', 'Approved: job created') : EST.sent ? pill('info-p', 'Sent: waiting for the customer') : pill('plain', 'Draft')}</span>
+        ${EST.sent ? '' : `<button class="btn primary" type="button" id="sendest">Send to customer</button>`}</div></section>
+    <section class="panel"><div class="panel-head"><h2>Customer portal ${newTag}</h2><span class="sub">What the customer sees</span></div>
+      <div class="phone"><div class="phone-bar"><b>Cassidy Air</b><span>Customer portal</span></div>
+        <div class="row" style="padding:10px 12px 0">${ptab('approve', 'Approve')}${ptab('pay', 'Pay')}${ptab('book', 'Book')}</div>
+        <div class="phone-body">${portal}</div></div></section>
+  </div>`);
+  const V = el('view');
+  V.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { if (EST.signed) return; EST.pick = b.dataset.pick; VIEWS.estimates(); });
+  V.querySelectorAll('[data-addon]').forEach(c => c.onchange = () => { EST.addons[c.dataset.addon] = c.checked; VIEWS.estimates(); });
+  V.querySelector('#member')?.addEventListener('change', e => { EST.member = e.target.checked; VIEWS.estimates(); });
+  V.querySelector('#sendest')?.addEventListener('click', () => { EST.sent = true; STATE.portal = 'approve'; const f = FOLLOW.find(x => x.id === EST.id); f.amt = estTotal(EST.pick); toast(`${EST.id} sent to ${EST.cust} by email and SMS. Follow-ups start if it is not approved in 3 days.`); VIEWS.estimates(); });
+  V.querySelectorAll('[data-ptab]').forEach(b => b.onclick = () => { STATE.portal = b.dataset.ptab; VIEWS.estimates(); });
+  V.querySelectorAll('[name="popt"]').forEach(r => r.onchange = () => { EST.pick = r.value; VIEWS.estimates(); });
+  V.querySelector('#sign')?.addEventListener('click', () => {
+    const name = el('signame').value.trim();
+    if (!name || !el('sigok').checked) { toast('Type your name and tick the box to approve.'); return; }
+    EST.signed = { name, at: fmtDay(0) + ' · ' + hhmm(NOW_MIN), device: 'iPhone · Safari' };
+    const f = FOLLOW.find(x => x.id === EST.id); f.status = 'approved'; f.amt = estTotal(EST.pick);
+    QUEUE.push({ id: 'Q-' + (570 + QUEUE.length), title: 'Water heater replacement (' + PRICEBOOK[EST.pick].name.toLowerCase() + ')', customer: 'Gomez residence, West Palm Beach', skill: 'Plumbing', part: PRICEBOOK[EST.pick].lines[0][0], mins: 240, pri: 'Normal' });
+    toast(`${EST.id} approved and signed. Job created and added to the dispatch queue; reminders stopped.`); renderNav(); VIEWS.estimates();
+  });
+  V.querySelector('#pay')?.addEventListener('click', () => { STATE.payStep = true; VIEWS.estimates(); });
+  V.querySelector('#paydone')?.addEventListener('click', () => { inv.status = 'paid'; STATE.payStep = false; toast(`${inv.id} paid online: ${fmt$(inv.amt)}. Receipt emailed; reminders stopped.`); renderNav(); VIEWS.estimates(); });
+  V.querySelector('#book')?.addEventListener('click', () => {
+    const what = el('bk-what').value, when = el('bk-when').value, note = el('bk-note').value.trim();
+    STATE.booked = `${what} · ${when}${note ? ' · ' + note : ''}`;
+    QUEUE.push({ id: 'Q-' + (580 + QUEUE.length), title: what + ' (portal booking)', customer: 'Reyes residence, Lake Worth', skill: /water|leak/i.test(what) ? 'Plumbing' : 'HVAC', part: '—', mins: 60, pri: when.startsWith('Today') ? 'High' : 'Normal' });
+    toast('Portal booking received: Service Request created and added to the dispatch queue.'); renderNav(); VIEWS.estimates();
+  });
+};
+
+VIEWS.field = () => {
+  const run = RUNS.find(r => r.id === 'J-24117'), mins = TIME.reduce((s, t) => s + (t.e - t.s), 0) + (STATE.clockIn ? 30 : 0);
+  const call = CALLS.find(c => c.id === STATE.call);
+  view(`
+  <h1>Field & AI</h1><p class="lead">What technicians capture on the job, the paperwork WAMWins drafts from their notes, and the calls answered for the office. AI drafts and AI phone answering are later-tier capabilities, shown here as a preview.</p>
+  <div class="grid g2" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>Time on J-24117 ${newTag}</h2>${info('Time tracking', 'Technicians clock time against the job. Real hours replace estimated hours in job costing, so the same-job comparison uses actual numbers.')}</div>
+      <p class="small muted" style="margin-bottom:8px">Marco Diaz · ${run.title} · estimate ${run.hours} h</p>
+      <div class="table-wrap"><table><tbody>${TIME.map(t => `<tr><td>${t.what}</td><td class="small muted">${hhmm(t.s)}–${hhmm(t.e)}</td><td class="num">${((t.e - t.s) / 60).toFixed(2)} h</td></tr>`).join('')}
+        ${STATE.clockIn ? `<tr><td>Install new motor</td><td class="small muted">${hhmm(STATE.clockIn)}–now</td><td class="num">${pill('ok', 'Running')}</td></tr>` : ''}</tbody></table></div>
+      <div class="row" style="margin-top:10px;justify-content:space-between"><span class="small">Actual so far <b>${(mins / 60).toFixed(2)} h</b> of ${run.hours} h estimated</span>
+        <button class="btn ${STATE.clockIn ? 'danger' : 'primary'}" type="button" id="tclock">${STATE.clockIn ? 'Clock out' : 'Clock in: install'}</button></div></section>
+    <section class="panel"><div class="panel-head"><h2>Receipts ${newTag}</h2>${info('Receipts', 'A photo of a supply-house receipt is read into amount and items. The cost goes to the job, and parts bought for the van go into its stock, so job costing and van inventory both stay right.')}</div>
+      <div class="list">${RECEIPTS.map(r => `<div class="item"><div class="top"><b>${r.id} · ${fmt$(r.amt)}</b>${r.status === 'filed' ? pill('ok', 'Filed to ' + r.job) : pill('warn', 'Check and file')}</div><span class="small">${r.items}</span><span class="small muted">${r.t} · ${r.store} · ${r.to}</span>
+        ${r.status === 'check' ? `<div class="row"><button class="btn sm primary" type="button" data-file="${r.id}">File to ${r.job}</button></div>` : ''}</div>`).join('')}</div>
+      ${RECEIPTS.some(r => r.id === 'RC-202') ? '' : `<button class="btn" type="button" id="snap" style="margin-top:10px">Add receipt photo (sample)</button>`}</section>
+  </div>
+  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Drafts for review ${newTag}</h2>${pill('info-p', 'Later tier')}${info('Drafts for review', 'WAMWins drafts the completion report, invoice and customer message from the technician\'s short notes. Nothing is sent or posted until a person approves it, and the person can edit the draft first.')}</div>
+    <div class="grid g3">${DRAFTS.map(d => `<div class="item draft"><div class="top"><b>${d.kind}</b>${d.status === 'review' ? pill('warn', 'Needs approval') : d.status === 'sent' ? pill('ok', 'Approved and sent') : pill('plain', 'Discarded')}</div>
+      <span class="small muted">${d.job}</span><span class="small"><b>Technician notes:</b> ${esc(d.notes)}</span>
+      ${d.status === 'review' ? `<label class="small muted" for="dt-${d.id}">AI draft (you can edit)</label><textarea id="dt-${d.id}" rows="5">${esc(d.text)}</textarea>
+      <div class="row"><button class="btn sm primary" type="button" data-approve="${d.id}">Approve${d.kind === 'Invoice' ? ' and post' : ' and send'}</button><button class="btn sm danger" type="button" data-discard="${d.id}">Discard</button></div>` : `<span class="small">${esc(d.text)}</span>`}</div>`).join('')}</div></section>
+  <div class="grid g-side" style="margin-top:16px">
+    <section class="panel"><div class="panel-head"><h2>AI phone answering ${newTag}</h2>${pill('info-p', 'Later tier')}${info('AI phone answering', 'Inbound calls are answered, the request is captured and a Service Request is created. Every call starts by saying it is recorded, because Florida requires every party to consent to recording (Fla. Stat. 934.03). Calls a person must handle are flagged for the office.')}</div>
+      <div class="list">${CALLS.map(c => `<button class="item ${c.id === call.id ? 'sel' : ''}" type="button" data-call="${c.id}"><div class="top"><b>${c.who}</b>${c.status === 'review' ? pill('warn', 'Needs a person') : pill('ok', c.out)}</div><span class="small muted">${c.t} · ${c.dur} · ${c.summary}</span></button>`).join('')}</div></section>
+    <section class="panel"><div class="panel-head"><h2>${call.id} · ${call.t}</h2><span class="sub">${call.dur}</span></div>
+      <p class="small" style="margin-bottom:8px"><b>Summary:</b> ${call.summary}</p>
+      <div class="transcript">${call.tr.map(([w, t], i) => `<p class="small"><b>${w === 'AI' ? 'WAMWins' : 'Caller'}:</b> ${t}${i === 0 ? ` <span class="pill plain">Recording notice</span>` : ''}</p>`).join('')}</div>
+      <div class="row" style="margin-top:10px">${call.status === 'review' ? `<button class="btn primary" type="button" id="mkreq">Create service request</button><button class="btn" type="button" id="cbk">Log callback done</button>` : `<span class="small">${pill('ok', call.out)}</span>`}</div>
+      <p class="src" style="margin-top:8px">Recordings and transcripts follow the consent and retention rules in the requirements.</p></section>
+  </div>`);
+  const V = el('view');
+  V.querySelector("#tclock").onclick = () => {
+    if (STATE.clockIn) { TIME.push({ job: 'J-24117', what: 'Install new motor', s: STATE.clockIn, e: STATE.clockIn + 30 }); STATE.clockIn = null; toast('Clocked out: 0.50 h added to J-24117. Job costing now uses actual hours.'); }
+    else { STATE.clockIn = NOW_MIN; toast('Clocked in on J-24117 at ' + hhmm(NOW_MIN) + '.'); }
+    VIEWS.field();
+  };
+  V.querySelector('#snap')?.addEventListener('click', () => { RECEIPTS.push({ id: 'RC-202', t: hhmm(NOW_MIN), ...SAMPLE_RECEIPT, status: 'check' }); toast('Receipt read: $58.36, 2 items. Check and file it.'); VIEWS.field(); });
+  V.querySelectorAll('[data-file]').forEach(b => b.onclick = () => {
+    const r = RECEIPTS.find(x => x.id === b.dataset.file); r.status = 'filed';
+    run.mat.push(['Supply-house receipt ' + r.id, 1, r.amt]);
+    const van = VANS.find(v => v.id === 'V-101'); van.events.push({ t: hhmm(NOW_MIN), item: 'Run capacitor 5 µF (2) from receipt ' + r.id, rfid: '2 tags added', cam: 'Loading seen', pr: 'Receipt ' + r.id, res: 'ok' });
+    toast(`${r.id} filed: ${fmt$(r.amt)} added to J-24117 costing and the parts to V-101 stock.`); VIEWS.field();
+  });
+  V.querySelectorAll('[data-approve]').forEach(b => b.onclick = () => { const d = DRAFTS.find(x => x.id === b.dataset.approve); d.text = el('dt-' + d.id).value; d.status = 'sent'; toast(`${d.kind} for ${d.job.split(' · ')[0]} approved${d.kind === 'Invoice' ? ' and posted' : ' and sent'}.`); renderNav(); VIEWS.field(); });
+  V.querySelectorAll('[data-discard]').forEach(b => b.onclick = () => { const d = DRAFTS.find(x => x.id === b.dataset.discard); d.status = 'discarded'; toast(`${d.kind} draft discarded. Nothing was sent.`); renderNav(); VIEWS.field(); });
+  V.querySelectorAll('[data-call]').forEach(b => b.onclick = () => { STATE.call = b.dataset.call; VIEWS.field(); });
+  V.querySelector('#mkreq')?.addEventListener('click', () => {
+    call.status = 'done'; call.out = 'Created Q-' + (590 + QUEUE.length);
+    QUEUE.push({ id: 'Q-' + (590 + QUEUE.length), title: 'No hot water; replacement price', customer: 'Patel residence, Jupiter', skill: 'Plumbing', part: '—', mins: 60, pri: 'High' });
+    toast('Service request created from the call and added to the dispatch queue.'); renderNav(); VIEWS.field();
+  });
+  V.querySelector('#cbk')?.addEventListener('click', () => { call.status = 'done'; call.out = 'Callback done by office'; toast('Callback logged.'); renderNav(); VIEWS.field(); });
 };
 
 addEventListener('hashchange', go); go();

@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>WAMWins Trades Demo</title>
-<meta name="description" content="WAMWins Trades demo: ICT Library workflow, dispatch, van inventory, Loxone monitoring and cost comparison, with sample data.">
+<title>Trades Demo</title>
+<meta name="description" content="Trades demo: ICT Library workflow, dispatch, van inventory, Loxone monitoring and cost comparison, with sample data.">
 <meta name="theme-color" content="#0B49D1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="WAMWins Trades">
+<meta name="apple-mobile-web-app-title" content="Trades Demo">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -50,8 +50,8 @@ p { margin: 0 }
 .app { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100% }
 .rail { background: #0B49D1; color: #fff; padding: 20px 14px; display: flex; flex-direction: column; gap: 18px; position: sticky; top: 0; height: 100vh; }
 .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px }
-.brand img { width: 40px; height: 40px; border-radius: 10px }
-.brand b { font-size: 17px; letter-spacing: .2px } .brand b span { color: #FFC107 }
+.brand .demo-icon { width: 40px; height: 40px; flex: none; display: block }
+.brand b { font-size: 19px; letter-spacing: .2px; white-space: nowrap } .brand b span { color: #FFC107 }
 .brand small { display: block; font-size: 11px; opacity: .8; letter-spacing: .6px; text-transform: uppercase }
 .nav { display: flex; flex-direction: column; gap: 4px }
 .nav a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: #DCE6FF; text-decoration: none; font-weight: 500; white-space: nowrap }
@@ -69,7 +69,7 @@ p { margin: 0 }
 .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)) } .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)) }
 .g-side { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; min-width: 0 }
-.panel-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px }
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px }
 .panel-head .sub { color: var(--ink-3); font-size: 12.5px; margin-left: auto }
 .info { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--red); color: var(--red); background: transparent; display: inline-grid; place-items: center; font: 700 12px/1 Georgia, serif; flex: none }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px }
@@ -151,7 +151,7 @@ svg text { font-family: var(--font) }
 .field { display: grid; gap: 4px } .field label { font-size: 12.5px; color: var(--ink-2); font-weight: 500 }
 .field output { font-weight: 600 }
 input[type="range"] { width: 100%; accent-color: #0B49D1 }
-select, input[type="number"] { border: 1.5px solid var(--line); background: var(--surface); border-radius: var(--r-s); padding: 8px 10px; min-height: 40px; width: 100% }
+select, input[type="number"], .field input[type="text"] { border: 1.5px solid var(--line); background: var(--surface); border-radius: var(--r-s); padding: 8px 10px; min-height: 40px; width: 100% }
 .saving { background: var(--ok-soft); color: var(--ok); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 2px }
 .saving b { font-size: 24px }
 .src { font-size: 12px; color: var(--ink-3) } .src a { color: var(--blue) }
@@ -161,6 +161,49 @@ select, input[type="number"] { border: 1.5px solid var(--line); background: var(
 .modal-back { position: fixed; inset: 0; background: rgba(8,14,32,.55); z-index: 60; display: grid; place-items: center; padding: 16px }
 .modal { background: var(--surface); border-radius: var(--r); max-width: 460px; width: 100%; padding: 20px; display: grid; gap: 12px; border-top: 4px solid var(--red) }
 .section-gap { display: grid; gap: 16px }
+/* viewing by permission: hidden customer details and money */
+.locked { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; white-space: nowrap; max-width: 100% }
+.lockbar { background: var(--surface-2); color: var(--ink-3); border: 1px dashed var(--line); border-radius: 5px; padding: 0 6px; font-size: 11.5px; font-weight: 500; line-height: 18px; letter-spacing: .2px }
+.kpi .v .lockbar { font-size: 14px; line-height: 26px; padding: 0 10px }
+.info.sm { width: 18px; height: 18px; font-size: 10px; border-width: 1.25px; cursor: pointer; vertical-align: middle }
+span.info.sm:focus-visible { outline: 3px solid var(--yellow); outline-offset: 1px }
+.locked-block { display: flex; align-items: center; gap: 8px; background: var(--surface-2); border: 1px dashed var(--line); border-radius: var(--r-s); padding: 14px 12px; color: var(--ink-3); font-size: 12.5px }
+.locked-block .lockbar { background: none; border: 0; padding: 0 }
+.blk .locked { gap: 0 } .blk .lockbar { display: none }
+.viewer-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 6px 3px 12px }
+/* warehouse summary + confirmation dialog */
+.summary-note { margin-top: 16px; background: var(--blue-soft); border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: var(--r); padding: 12px 16px; display: grid; gap: 6px }
+.summary-note h2 { font-size: 15px } .summary-note p { max-width: 110ch } .summary-note a { color: var(--blue) }
+.modal.confirm { max-width: 560px; border-top-color: var(--yellow); max-height: calc(100vh - 32px); overflow-y: auto }
+.confirm-check { display: flex; gap: 10px; align-items: flex-start; background: var(--yellow-soft); border-radius: var(--r-s); padding: 10px 12px; font-size: 13px; font-weight: 500; cursor: pointer }
+.confirm-check input { margin-top: 3px; width: 16px; height: 16px; accent-color: #0B49D1; flex: none }
+/* dispatch: levels, crews, people */
+.lvl { display: inline-block; font-size: 10.5px; font-weight: 700; border-radius: 4px; padding: 0 5px; line-height: 16px; vertical-align: 1px; letter-spacing: .3px }
+.lvl.l1 { background: var(--surface-2); color: var(--ink-2) } .lvl.l2 { background: var(--blue-soft); color: var(--blue) } .lvl.l3 { background: var(--yellow); color: #0E1B3D }
+.slot { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 10px; display: grid; gap: 8px }
+.slot-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px }
+.people { display: flex; flex-wrap: wrap; gap: 4px 6px }
+.person { font-size: 12px; background: var(--surface-2); border-radius: 999px; padding: 1px 9px; white-space: nowrap }
+.person.open { background: var(--red-soft); color: var(--red) }
+/* you are here */
+.locbar { position: sticky; top: var(--loc-top, 10px); z-index: 15; display: flex; justify-content: flex-end; margin: -10px 0 10px; pointer-events: none }
+.loc { pointer-events: auto; display: inline-flex; align-items: center; gap: 6px; max-width: 100%; font-size: 12.5px; background: var(--surface); color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; box-shadow: 0 4px 14px rgba(14, 27, 61, .12) }
+.loc a { color: var(--blue); font-weight: 600; text-decoration: none; white-space: nowrap } .loc a:hover { text-decoration: underline }
+.loc .loc-sec { font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0 }
+.loc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 3px var(--red-soft); flex: none }
+.loc-k { white-space: nowrap }
+@media (max-width: 520px) { .loc-k { display: none } }
+/* job media */
+.capture { background: var(--surface-2); border-radius: var(--r-s); padding: 12px; min-width: 0 } .capture h3 { margin-bottom: 8px }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap }
+label.btn { cursor: pointer } label.btn:focus-within { outline: 3px solid var(--yellow); outline-offset: 2px }
+.media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px }
+.media .top { gap: 8px; align-items: baseline } .media { border: 1px solid var(--line); border-radius: var(--r-s); padding: 10px; display: flex; flex-direction: column; gap: 4px; min-width: 0; background: var(--surface) }
+.media-prev { aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; background: var(--surface-2); display: grid; place-items: center; margin-bottom: 4px }
+.media-prev img, .media-prev video { width: 100%; height: 100%; object-fit: cover; display: block }
+.media-prev audio { width: 92% } .media-prev .locked-block { width: 100%; height: 100%; border: 0; justify-content: center; border-radius: 0 }
+.media-prev:has(.wave) { display: flex; flex-direction: column; justify-content: center; gap: 6px }
+.wave { display: flex; align-items: center; gap: 2px; height: 40px } .wave i { width: 3px; background: var(--blue); border-radius: 2px; opacity: .75 }
 /* customer and field tools */
 .newtag { font-size: 10.5px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; background: var(--yellow); color: #0E1B3D; border-radius: 999px; padding: 1px 8px; vertical-align: 2px; margin-left: 4px }
 .item.opt { cursor: pointer }
@@ -179,7 +222,7 @@ textarea { font: inherit; font-size: 13px; color: var(--ink); background: var(--
   .app { grid-template-columns: minmax(0, 1fr) }
   .rail { position: sticky; top: env(safe-area-inset-top, 0px); height: auto; z-index: 20; padding: 10px max(12px, env(safe-area-inset-left, 0px)) 8px max(12px, env(safe-area-inset-right, 0px)); gap: 8px }
   body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: #0B49D1 }
-  .brand img { width: 32px; height: 32px }
+  .brand .demo-icon { width: 32px; height: 32px }
   .nav { flex-direction: row; overflow-x: auto; scrollbar-width: none } .nav::-webkit-scrollbar { display: none }
   .nav a { padding: 8px 12px }
   .rail-foot { display: none }
@@ -191,13 +234,14 @@ textarea { font: inherit; font-size: 13px; color: var(--ink); background: var(--
 </head>
 <body>
 <div class="app">
-  <aside class="rail" aria-label="WAMWins modules">
-    <div class="brand"><img src="data:image/png;base64,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" alt=""><div><b>WAM<span>Wins</span></b><small>Trades demo</small></div></div>
+  <aside class="rail" aria-label="Demo modules">
+    <div class="brand"><svg class="demo-icon" viewBox="0 0 64 64" role="img" aria-label="Demo"><rect width="64" height="64" rx="14" fill="#FFFFFF"/><text x="32" y="38" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-weight="700" font-size="17" letter-spacing=".5" fill="#0B49D1">DEMO</text><rect x="14" y="44" width="36" height="4" rx="2" fill="#FFC107"/></svg><div><b>Trades <span>Demo</span></b></div></div>
     <nav class="nav" id="nav" aria-label="Sections"></nav>
     <p class="rail-foot">Sample data for the Cassidy proposal. Nothing here is connected to real customers, vans or sensors.</p>
   </aside>
   <main class="main" id="main" tabindex="-1">
     <div class="topbar"><span class="demo-chip">Demo · sample data</span><button class="btn primary sm" type="button" id="install" hidden>Install app</button><span class="clock" id="clock"></span></div>
+    <div class="locbar"><div class="loc" id="loc" role="navigation" aria-label="You are here"></div></div>
     <div id="view"></div>
   </main>
 </div>
@@ -220,14 +264,19 @@ const hhmm = m => { const h = Math.floor(m / 60), mm = m % 60, ap = h >= 12 ? 'P
 const el = id => document.getElementById(id);
 
 const TECHS = [
-  { id: 't1', name: 'Marco Diaz', skills: ['HVAC', 'Brazing'], van: 'V-101', zone: 'Riviera Beach' },
-  { id: 't2', name: 'Kayla Brooks', skills: ['HVAC'], van: 'V-102', zone: 'West Palm Beach' },
-  { id: 't3', name: 'Andre Pierce', skills: ['Plumbing'], van: 'V-103', zone: 'Palm Beach Gardens' },
-  { id: 't4', name: 'Lena Ortiz', skills: ['Plumbing', 'Leak detection'], van: 'V-104', zone: 'Jupiter' },
-  { id: 't5', name: 'Sam Whitaker', skills: ['Electrical', 'HVAC'], van: 'V-105', zone: 'Lake Worth' },
-  { id: 't6', name: 'Priya Nair', skills: ['Electronics', 'HVAC'], van: 'V-106', zone: 'Boca Raton' },
+  // level: 1 = apprentice / helper, 2 = journeyman service tech, 3 = senior / master tech (commercial, controls, crew lead)
+  { id: 't1', name: 'Marco Diaz', skills: ['HVAC', 'Brazing'], van: 'V-101', zone: 'Riviera Beach', level: 3 },
+  { id: 't2', name: 'Kayla Brooks', skills: ['HVAC'], van: 'V-102', zone: 'West Palm Beach', level: 2 },
+  { id: 't3', name: 'Andre Pierce', skills: ['Plumbing'], van: 'V-103', zone: 'Palm Beach Gardens', level: 2 },
+  { id: 't4', name: 'Lena Ortiz', skills: ['Plumbing', 'Leak detection'], van: 'V-104', zone: 'Jupiter', level: 3 },
+  { id: 't5', name: 'Sam Whitaker', skills: ['Electrical', 'HVAC'], van: 'V-105', zone: 'Lake Worth', level: 2 },
+  { id: 't6', name: 'Priya Nair', skills: ['Electronics', 'HVAC'], van: 'V-106', zone: 'Boca Raton', level: 1 },
+  { id: 't7', name: 'Jordan Lee', skills: ['HVAC'], van: null, zone: 'West Palm Beach', level: 1, note: 'Apprentice, rides with a lead' },
+  { id: 't8', name: 'Chris Vega', skills: ['Plumbing'], van: null, zone: 'Palm Beach Gardens', level: 1, note: 'Apprentice, rides with a lead' },
+  { id: 't9', name: 'Ray Thompson', skills: ['Electrical'], van: null, zone: 'Lake Worth', level: 3, note: 'Master electrician, shop truck' },
 ];
-const DIST = { t1: 4, t2: 9, t3: 12, t4: 18, t5: 15, t6: 27 };    // miles to the sample jobs' area
+let QSEQ = 601; const nextQ = () => 'Q-' + QSEQ++;
+const DIST = { t1: 4, t2: 9, t3: 12, t4: 18, t5: 15, t6: 27, t7: 6, t8: 13, t9: 11 };    // miles to the sample jobs' area
 
 // Standard procedure (the six steps added to the brief's scenarios are flagged)
 const STEPS = [
@@ -282,11 +331,28 @@ const BOARD = [   // today's scheduled jobs, minutes from midnight
   { tech: 't5', s: 14 * 60, e: 15 * 60, t: 'Reyes · thermostat' },
   { tech: 't6', s: 7 * 60, e: 8 * 60 + 30, t: 'Bayview 4B · maintenance', st: 'done' },
   { tech: 't6', s: 12 * 60, e: 13 * 60 + 30, t: 'Bayview 7A · maintenance' },
+  { tech: 't7', s: 7 * 60, e: 8 * 60 + 30, t: 'Bayview 4B · maintenance (helper)', st: 'done' },
+  { tech: 't7', s: 9 * 60, e: 12 * 60, t: 'Shop · coil cleaning training' },
+  { tech: 't8', s: 8 * 60, e: 10 * 60, t: 'Gomez · water heater (helper)', st: 'done' },
+  { tech: 't8', s: 11 * 60, e: 12 * 60 + 30, t: 'Shell Cove · drain line (helper)' },
+  { tech: 't9', s: 8 * 60 + 30, e: 11 * 60 + 30, t: 'Marina Tower · transfer switch service' },
 ];
 const QUEUE = [
-  { id: 'Q-551', title: 'Water heater leaking', customer: 'Nguyen residence, Palm Beach Gardens', skill: 'Plumbing', part: 'T&P relief valve', mins: 90, pri: 'High' },
-  { id: 'Q-552', title: 'AC short-cycling', customer: 'Coral Dental, Riviera Beach', skill: 'HVAC', part: 'Dual run capacitor 45/5 µF', mins: 75, pri: 'Normal' },
-  { id: 'Q-553', title: 'Breaker trips on AC start', customer: 'Hale residence, Lake Worth', skill: 'Electrical', part: 'Hard start kit', mins: 60, pri: 'Normal' },
+  // kind: new call, crew job, augment (more people on a job already running), escalate (needs a higher level)
+  // crew: one slot per person needed: role, minimum level, trade
+  { id: 'Q-551', kind: 'New call', title: 'Water heater leaking', customer: 'Nguyen residence, Palm Beach Gardens', skill: 'Plumbing', part: 'T&P relief valve', mins: 90, pri: 'High',
+    crew: [{ role: 'Lead', lvl: 2, skill: 'Plumbing' }], by: 'AI phone answering · Tess Morgan (customer service) confirmed' },
+  { id: 'Q-552', kind: 'New call', title: 'AC short-cycling, commercial', customer: 'Coral Dental, Riviera Beach', skill: 'HVAC', part: 'Dual run capacitor 45/5 µF', mins: 75, pri: 'Normal',
+    crew: [{ role: 'Lead', lvl: 3, skill: 'HVAC' }], by: 'Loxone alert + customer call', why: 'Commercial controls diagnosis needs a level 3 technician' },
+  { id: 'Q-553', kind: 'New call', title: 'Breaker trips on AC start', customer: 'Hale residence, Lake Worth', skill: 'Electrical', part: 'Hard start kit', mins: 60, pri: 'Normal',
+    crew: [{ role: 'Lead', lvl: 2, skill: 'Electrical' }], by: 'Customer portal booking' },
+  { id: 'Q-557', kind: 'Crew job', title: 'Main sewer line replacement, building C', customer: 'Shell Cove HOA', skill: 'Plumbing', part: '6" PVC SDR-35, 80 ft', mins: 240, pri: 'Normal', at: 13 * 60,
+    crew: [{ role: 'Lead', lvl: 3, skill: 'Plumbing' }, { role: 'Pipe layer', lvl: 2, skill: 'Plumbing' }, { role: 'Helper', lvl: 1, skill: 'Plumbing' }],
+    by: 'Estimate EST-7731 approved · permit issued · Mike Rowan (service manager) set crew size', why: 'Excavation and a 6-inch line need three people' },
+  { id: 'Q-555', kind: 'Augment', job: 'J-24120', title: 'Helper needed to set the new condenser', customer: 'Okafor residence', skill: 'HVAC', part: '—', mins: 120, pri: 'High', at: 13 * 60,
+    crew: [{ role: 'Helper', lvl: 1, skill: 'HVAC' }], by: 'Requested by Kayla Brooks from site at 10:20 AM', why: 'The condenser is too heavy to set safely alone' },
+  { id: 'Q-556', kind: 'Escalate', job: 'J-24122', title: 'Compressor will not start after repair', customer: 'Lopez residence', skill: 'HVAC', part: '—', mins: 60, pri: 'High',
+    crew: [{ role: 'Senior support', lvl: 3, skill: 'HVAC' }], by: 'Sam Whitaker (level 2) asked for level 3 support', why: 'Possible locked compressor: needs a senior diagnosis before quoting a replacement', remote: true },
 ];
 
 const VAN_ITEMS = [
@@ -295,7 +361,7 @@ const VAN_ITEMS = [
   ['T&P relief valve 3/4"', 'TPV-34', 'Item tag'], ['PEX-A pipe 3/4", 10 ft', 'PEX-3410', 'Bin tag'], ['Brazing alloy 15%, 1 lb', 'BRZ-15', 'Pack tag'],
   ['Nitrogen cylinder 40 cf', 'NIT-40', 'Item tag'], ['R-410A cylinder 25 lb', 'REF-410', 'Item tag'], ['Digital micron gauge', 'TL-MIC', 'Tool tag'], ['Vacuum pump 6 CFM', 'TL-VP6', 'Tool tag'],
 ];
-const VANS = TECHS.map((t, i) => ({
+const VANS = TECHS.filter(t => t.van).map((t, i) => ({
   id: t.van, tech: t.id, status: i === 0 ? 'review' : i === 3 ? 'review' : 'ok', reconciled: false,
   stock: VAN_ITEMS.map((it, j) => ({ name: it[0], sku: it[1], tag: it[2], qty: Math.max(0, ((i * 7 + j * 3) % 6) + (j > 6 ? -3 : 0)), min: j > 6 ? 1 : 2, age: (i * 13 + j * 17) % 120 }))
     .map(s => ({ ...s, qty: Math.max(s.tag === 'Tool tag' ? 1 : 0, s.qty) })),
@@ -329,7 +395,61 @@ for (let m = 0; m <= 6; m++) STATE.braze.readings.push(evac(m)); STATE.braze.min
 // ============================================================ helpers
 const pill = (cls, txt) => `<span class="pill ${cls}">${txt}</span>`;
 const info = (title, body) => `<button class="info" type="button" aria-label="More information: ${title}" data-info-title="${title}" data-info-body="${body.replace(/"/g, '&quot;')}">i</button>`;
+// ============================================================ viewing by permission
+// This demo is shown to the IT department, which is not authorized to see customer names and addresses
+// or job costs and prices. Those details are replaced with gray placeholders after every screen draws.
+// (In the product the server never sends them to an unauthorized role; here the sample data is in the page.)
+// Who is viewing comes from the artifact's sharing level: Editors and the owner are management (authorized) and can
+// switch to preview the IT department's view; Contributors are technicians; Viewers see the IT department's view.
+const MODES = { authorized: 'Authorized personnel', it: 'IT department', technician: 'Technician' };
+const VIEWER = { mode: 'it', label: MODES.it, restricted: true };
+const CL = { db: null, assets: null, user: null, uid: null, admin: false };
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { } };
+let PERM_NOTE = '';
+function setMode(m) {
+  Object.assign(VIEWER, { mode: m, label: MODES[m], restricted: m !== 'authorized' });
+  PERM_NOTE = `Viewing by permission. Customer names and addresses, and job costs and prices, are visible only to sales, finance, accounting and other authorized personnel. You are viewing as ${m === 'technician' ? 'a technician' : 'the ' + MODES[m]}, so these details are hidden.`;
+  if (window.__wamChip) renderChip();
+}
+setMode(window.WAM_DEMO_ROLE === 'authorized' ? 'authorized' : 'it');
+const CUSTOMERS = ['Harbor Plaza Offices', 'Harbor Plaza', 'Okafor residence', 'Okafor', 'Lopez residence', 'Ms. Lopez', 'Lopez', 'Bayview Condos (12 units)', 'Bayview Condos, unit 4B', 'Bayview Condos', 'Bayview 4B', 'Bayview 7A',
+  'Nguyen residence', 'Nguyen', 'Coral Dental', 'Hale residence', 'Gomez residence', 'Ms. Gomez', 'Gomez', 'Shell Cove HOA', 'Shell Cove', 'Marina Tower', 'Reyes residence', 'Reyes', 'Patel residence', 'Patel', 'Okafor'];
+const PLACES = ['West Palm Beach', 'Palm Beach Gardens', 'Riviera Beach', 'Lake Worth', 'Jupiter', 'Boca Raton'];
+const STREETS = ['Holly Drive'];
+const rxq = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const byLen = a => [...new Set(a)].sort((x, y) => y.length - x.length).map(rxq).join('|');
+// a customer name, optionally followed by ", <city>"; a street; or an amount of money
+const SENS_RX = new RegExp(`(?<![\\w])(${byLen(CUSTOMERS)})(?![\\w])(?:, (${byLen(PLACES)}))?|(?<![\\w])(${byLen(STREETS)})(?![\\w])|([−-]?\\$\\d[\\d,]*(?:\\.\\d+)?)`, 'g');
+const lockHTML = (label, inside) => `<span class="locked"><span class="lockbar">${label}</span>${inside
+  ? `<span class="info sm" role="button" tabindex="0" aria-label="Viewing by permission: ${label} hidden" data-info-title="Viewing by permission" data-info-body="${PERM_NOTE}">i</span>`
+  : `<button class="info sm" type="button" aria-label="Viewing by permission: ${label} hidden" data-info-title="Viewing by permission" data-info-body="${PERM_NOTE}">i</button>`}</span>`;
+const sens = (kind, html) => `<span data-sens="${kind}">${html}</span>`;   // marks a value the pattern cannot recognize (margins, typed names)
+function privatize(root) {
+  if (!VIEWER.restricted || STATE.route === 'cost') return;
+  const inside = n => !!n.closest?.('button, a, label');
+  root.querySelectorAll('[data-sens]').forEach(n => { const s = document.createElement('span'); s.innerHTML = lockHTML(n.dataset.sens, inside(n.parentElement)); n.replaceWith(s.firstChild); });
+  root.querySelectorAll('textarea').forEach(t => {
+    SENS_RX.lastIndex = 0; if (!SENS_RX.test(t.value)) return;
+    const d = document.createElement('div'); d.className = 'locked-block'; d.innerHTML = `<span class="lockbar">Draft text includes customer details and prices</span><button class="info sm" type="button" aria-label="Viewing by permission: draft hidden" data-info-title="Viewing by permission" data-info-body="${PERM_NOTE}">i</button>`;
+    t.replaceWith(d); d.closest('.item')?.querySelectorAll('[data-approve]').forEach(b => { b.disabled = true; b.title = 'Approval needs permission to view the draft'; });
+  });
+  root.querySelectorAll('option').forEach(o => { o.textContent = o.textContent.replace(SENS_RX, (m, c, p, st, money) => money ? '[amount]' : '[customer]'); });
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => n.parentElement.closest('script, style, textarea, option, svg, .locked') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  const hits = []; for (let n; (n = walker.nextNode());) { SENS_RX.lastIndex = 0; if (SENS_RX.test(n.nodeValue)) hits.push(n); }
+  hits.forEach(n => {
+    const ins = inside(n.parentElement), html = n.nodeValue.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))
+      .replace(SENS_RX, (m, c, p, st, money) => money ? lockHTML('Amount', ins) : st ? lockHTML('Address', ins) : lockHTML('Customer', ins) + (p ? ', ' + lockHTML('Address', ins) : ''));
+    const t = document.createElement('template'); t.innerHTML = html; n.replaceWith(t.content);
+  });
+}
+const scrubText = s => VIEWER.restricted ? s.replace(SENS_RX, (m, c, p, st, money) => money ? '[amount]' : st ? '[address]' : '[customer]' + (p ? ', [address]' : '')) : s;
+// an (i) inside a list button or link opens the note without also pressing the button
+document.addEventListener('click', e => { const b = e.target.closest('.locked [data-info-title], .locked-block [data-info-title]'); if (!b) return; e.preventDefault(); e.stopPropagation(); modal(b.dataset.infoTitle, b.dataset.infoBody); }, true);
+document.addEventListener('keydown', e => { const b = e.target.closest?.('span.info[data-info-title]'); if (b && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); modal(b.dataset.infoTitle, b.dataset.infoBody); } }, true);
+
 function toast(msg) {
+  msg = scrubText(msg);
   const box = el('toasts'), t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; box.append(t); while (box.children.length > 3) box.firstChild.remove(); setTimeout(() => t.remove(), 4200);
 }
 function modal(title, body) {
@@ -343,6 +463,22 @@ function modal(title, body) {
   document.body.append(back); ok.focus();
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-info-title]'); if (b) modal(b.dataset.infoTitle, b.dataset.infoBody); });
+// Confirmation step for actions that move stock or commit people: the confirm button stays off until the check box is ticked.
+function confirmBox({ title, html, check, ok, onOk }) {
+  const back = document.createElement('div'); back.className = 'modal-back';
+  back.innerHTML = `<div class="modal confirm" role="dialog" aria-modal="true" aria-labelledby="ct"><h2 id="ct"></h2><div class="confirm-body">${html}</div>
+    ${check ? `<label class="confirm-check"><input type="checkbox" id="c-ok"> <span></span></label>` : ''}
+    <div class="row" style="justify-content:flex-end"><button class="btn" type="button" data-x>Cancel</button><button class="btn primary" type="button" data-ok ${check ? 'disabled' : ''}></button></div></div>`;
+  back.querySelector('h2').textContent = title; back.querySelector('[data-ok]').textContent = ok;
+  if (check) back.querySelector('.confirm-check span').textContent = check;
+  privatize(back);
+  const prev = document.activeElement, okb = back.querySelector('[data-ok]'), close = () => { back.remove(); prev?.focus(); };
+  back.querySelector('#c-ok')?.addEventListener('change', e => { okb.disabled = !e.target.checked; });
+  back.querySelector('[data-x]').onclick = close; okb.onclick = () => { close(); onOk(); };
+  back.addEventListener('click', e => { if (e.target === back) close(); });
+  back.addEventListener('keydown', e => { if (e.key === 'Escape') close(); if (e.key === 'Tab') { const f = [...back.querySelectorAll('button:not([disabled]), input')]; const i = f.indexOf(document.activeElement); e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); } });
+  document.body.append(back); (back.querySelector('#c-ok') || okb).focus();
+}
 const runCost = r => { const m = r.mat.reduce((s, x) => s + x[1] * x[2], 0), l = r.hours * RATE.laborCost, o = (m + l) * RATE.overheadPct; return { m, l, o, total: m + l + o }; };
 const reviewCount = () => VANS.reduce((n, v) => n + v.events.filter(e => e.res === 'review').length, 0);
 const openInc = () => STATE.incidents.filter(i => i.status !== 'closed').length;
@@ -360,7 +496,7 @@ const ICON = {
 ICON.customers = '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18.5 20a6 6 0 0 0-2.5-5"/>';
 ICON.estimates = '<path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h4"/><path d="M4 7v14h11" opacity=".5"/>';
 ICON.field = '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10 18.5h4M9.5 8.5l2 2 3.5-4"/>';
-const ROUTES = [['dashboard', 'Central dashboard'], ['library', 'ICT Library'], ['dispatch', 'Dispatch'], ['customers', 'Customers'], ['estimates', 'Estimates & portal'], ['field', 'Field & AI'], ['warehouse', 'Warehouse'], ['inventory', 'Van inventory'], ['monitoring', 'Monitoring'], ['cost', 'Cost vs ServiceTitan']];
+const ROUTES = [['dashboard', 'Central dashboard'], ['library', 'ICT Library'], ['dispatch', 'Dispatch'], ['customers', 'Customers'], ['estimates', 'Estimates & portal'], ['field', 'Field activities'], ['warehouse', 'Warehouse'], ['inventory', 'Van inventory'], ['monitoring', 'Monitoring'], ['cost', 'Cost vs ServiceTitan']];
 function renderNav() {
   const badge = { dispatch: QUEUE.length, customers: fuOverdue().length, field: DRAFTS.filter(d => d.status === 'review').length + CALLS.filter(c => c.status === 'review').length, warehouse: whLow().length + whReview(), inventory: reviewCount(), monitoring: openInc() };
   el('nav').innerHTML = ROUTES.map(([k, l]) => `<a href="#${k}" ${STATE.route === k ? 'aria-current="page"' : ''}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>${l}${badge[k] ? `<span class="count" aria-label="${badge[k]} need attention">${badge[k]}</span>` : ''}</a>`).join('');
@@ -370,12 +506,40 @@ function go() {
   STATE.route = ROUTES.some(x => x[0] === r) ? r : 'dashboard';
   renderNav(); VIEWS[STATE.route](); el('main').focus({ preventScroll: true }); window.scrollTo(0, 0);
   el('nav').querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  STATE.locSec = null; locTop(); updateLoc();
 }
+// "You are here": the screen, plus the section being read; stays under the date while scrolling
+function updateLoc() {
+  const loc = el('loc'), label = ROUTES.find(r => r[0] === STATE.route)[1], line = loc.getBoundingClientRect().bottom + 24;
+  let sec = null;
+  el('view').querySelectorAll('section h2').forEach(h => { if (h.getBoundingClientRect().top <= line) { const c = h.cloneNode(true); c.querySelectorAll('.newtag').forEach(n => n.remove()); c.querySelectorAll('.locked').forEach(n => n.replaceWith(n.querySelector('.lockbar').textContent.toLowerCase())); sec = c.textContent.replace(/\s+/g, ' ').trim(); } });
+  if (window.scrollY < 40) sec = null;
+  const key = label + '|' + sec; if (loc.dataset.key === key) return; loc.dataset.key = key;
+  loc.innerHTML = `<span class="loc-dot" aria-hidden="true"></span><span class="loc-k">You are here:</span> <a href="#${STATE.route}" data-top>${label}</a>${sec ? ` <span aria-hidden="true">›</span> <span class="loc-sec"></span>` : ''}`;
+  if (sec) loc.querySelector('.loc-sec').textContent = sec;
+  loc.querySelector('[data-top]').onclick = e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+}
+let locRaf = 0; addEventListener('scroll', () => { if (!locRaf) locRaf = requestAnimationFrame(() => { locRaf = 0; updateLoc(); }); }, { passive: true });
+function locTop() { document.documentElement.style.setProperty('--loc-top', (innerWidth <= 820 ? document.querySelector('.rail').offsetHeight + 6 : 10) + 'px'); }
+addEventListener('resize', () => { locTop(); updateLoc(); }); locTop();
 el('clock').textContent = fmtDay(0, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' }) + ' · ' + hhmm(NOW_MIN) + ' (demo time)';
 
 // ============================================================ views
 const VIEWS = {};
-const view = html => { el('view').innerHTML = html; };
+const view = html => { el('view').innerHTML = html; privatize(el('view')); };
+// who is viewing, shown in the top bar; management can switch to preview the IT department's view
+const chip = document.createElement('span'); chip.className = 'viewer-chip';
+document.querySelector('.topbar').insertBefore(chip, el('clock'));
+window.__wamChip = true;
+function renderChip() {
+  const ib = VIEWER.restricted ? `<button class="info sm" type="button" aria-label="Viewing by permission" data-info-title="Viewing by permission" data-info-body="${PERM_NOTE}">i</button>` : '';
+  chip.innerHTML = CL.admin
+    ? `<label for="viewas">Viewing as:</label><select id="viewas"><option value="authorized">Authorized personnel</option><option value="it">IT department (preview)</option></select>${ib}`
+    : `Viewing as: <b>${VIEWER.label}</b>${ib}`;
+  const sel = chip.querySelector('#viewas');
+  if (sel) { sel.value = VIEWER.mode; sel.onchange = () => { lsSet('wam-view', sel.value); setMode(sel.value); VIEWS[STATE.route](); }; }
+}
+renderChip();
 
 VIEWS.dashboard = () => {
   const counts = {}; RUNS.forEach(r => { counts[r.at] = (counts[r.at] || 0) + 1; });
@@ -384,7 +548,7 @@ VIEWS.dashboard = () => {
   view(`
   <h1>Central dashboard</h1><p class="lead">One view over the ICT Library, dispatch, inventory and monitoring. Every number opens the records behind it.</p>
   <div class="kpis" style="margin-top:16px">
-    <a class="kpi" href="#dispatch"><span class="v">${BOARD.length}</span><span class="l">Jobs scheduled today</span><span class="note">${QUEUE.length} waiting to be dispatched</span></a>
+    <a class="kpi" href="#dispatch"><span class="v">${BOARD.length}</span><span class="l">Jobs scheduled today</span><span class="note">${QUEUE.length} issues to address</span></a>
     <a class="kpi" href="#library"><span class="v">${RUNS.filter(r => ['approve', 'budget'].includes(r.at)).length}</span><span class="l">Requests waiting for approval</span><span class="note">Budget and estimate approvals</span></a>
     <a class="kpi ${openInc() ? 'alert' : ''}" href="#monitoring"><span class="v">${openInc()}</span><span class="l">Open Loxone incidents</span><span class="note">${openInc() ? 'Alarm sent by app, email, SMS' : 'All monitored sites normal'}</span></a>
     <a class="kpi ${reviewCount() ? 'alert' : ''}" href="#inventory"><span class="v">${reviewCount()}</span><span class="l">Inventory movements to review</span><span class="note">RFID and camera disagree</span></a>
@@ -403,14 +567,14 @@ VIEWS.dashboard = () => {
       <a class="item" href="#monitoring" style="text-decoration:none;color:inherit"><div class="top"><b>Coral Dental AHU-1 short-cycling</b>${pill('warn', 'Watch')}</div><span class="small muted">9 compressor starts per hour</span></a>
     </div></section>
   </div>
-  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Same job, compared</h2><span class="sub">Condenser fan motor replacements</span>${info('Comparison', 'When the same kind of job comes in again, WAMWins shows past runs side by side: cost, time, margin and how long it took to get the part.')}</div>
+  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Same job, compared</h2><span class="sub">Condenser fan motor replacements</span>${info('Comparison', 'When the same kind of job comes in again, past runs are shown side by side: cost, time, margin and how long it took to get the part.')}</div>
     ${historyTable('B')}</section>`);
   el('view').querySelectorAll('[data-van]').forEach(a => a.addEventListener('click', () => { STATE.van = a.dataset.van; }));
 };
 
 function historyTable(sc, cur) {
-  const rows = HISTORY[sc].map(h => { const cost = h[2] + h[3] * RATE.laborCost; const tot = cost * (1 + RATE.overheadPct); return `<tr><td>${h[0]}</td><td>${h[1]}</td><td class="num">${fmt$(h[2])}</td><td class="num">${h[3]} h</td><td class="num">${fmt$(tot)}</td><td class="num">${h[4] ? fmt$(h[4]) : 'Plan'}</td><td class="num">${h[4] ? Math.round((1 - tot / h[4]) * 100) + '%' : '—'}</td><td class="num">${h[5]} d</td></tr>`; });
-  const curRow = cur ? (() => { const c = runCost(cur); return `<tr class="sel"><td><b>${cur.id}</b></td><td>This run (so far)</td><td class="num">${fmt$(c.m)}</td><td class="num">${cur.hours} h</td><td class="num">${fmt$(c.total)}</td><td class="num">${cur.price ? fmt$(cur.price) : 'Plan'}</td><td class="num">${cur.price ? Math.round((1 - c.total / cur.price) * 100) + '%' : '—'}</td><td class="num">—</td></tr>`; })() : '';
+  const rows = HISTORY[sc].map(h => { const cost = h[2] + h[3] * RATE.laborCost; const tot = cost * (1 + RATE.overheadPct); return `<tr><td>${h[0]}</td><td>${h[1]}</td><td class="num">${fmt$(h[2])}</td><td class="num">${h[3]} h</td><td class="num">${fmt$(tot)}</td><td class="num">${h[4] ? fmt$(h[4]) : 'Plan'}</td><td class="num">${h[4] ? sens('Margin', Math.round((1 - tot / h[4]) * 100) + '%') : '—'}</td><td class="num">${h[5]} d</td></tr>`; });
+  const curRow = cur ? (() => { const c = runCost(cur); return `<tr class="sel"><td><b>${cur.id}</b></td><td>This run (so far)</td><td class="num">${fmt$(c.m)}</td><td class="num">${cur.hours} h</td><td class="num">${fmt$(c.total)}</td><td class="num">${cur.price ? fmt$(cur.price) : 'Plan'}</td><td class="num">${cur.price ? sens('Margin', Math.round((1 - c.total / cur.price) * 100) + '%') : '—'}</td><td class="num">—</td></tr>`; })() : '';
   return `<div class="table-wrap"><table><thead><tr><th>Job</th><th>Work</th><th class="num">Materials</th><th class="num">Labor</th><th class="num">Total cost</th><th class="num">Price</th><th class="num">Margin</th><th class="num">Part lead time</th></tr></thead><tbody>${curRow}${rows.join('')}</tbody></table></div>`;
 }
 
@@ -432,7 +596,7 @@ VIEWS.library = () => {
         <div class="formcard"><b>${cur.form}</b>${formBody(r, cur)}</div>
         <div class="row" style="margin-top:12px">${cur.gate ? `<button class="btn primary" type="button" id="adv">Approve</button><button class="btn danger" type="button" id="rej">Reject: re-quote</button>` : `<button class="btn primary" type="button" id="adv">Complete step</button>`}</div>`}</section>
       <section class="panel"><div class="panel-head"><h2>Costing</h2>${info('Costing', 'Workflow plus the actual scenario gives the cost: materials, labor hours at the loaded rate, and overhead. Rates here are sample values.')}</div>
-        <dl class="kv"><dt>Materials</dt><dd>${fmt$(c.m)}</dd><dt>Labor</dt><dd>${r.hours} h × ${fmt$(RATE.laborCost)} = ${fmt$(c.l)}</dd><dt>Overhead (18%)</dt><dd>${fmt$(c.o)}</dd><dt><b>Total cost</b></dt><dd><b>${fmt$(c.total)}</b></dd><dt>Customer price</dt><dd>${r.price ? fmt$(r.price) + ' · margin ' + Math.round((1 - c.total / r.price) * 100) + '%' : 'Covered by maintenance agreement'}</dd></dl></section>
+        <dl class="kv"><dt>Materials</dt><dd>${fmt$(c.m)}</dd><dt>Labor</dt><dd>${r.hours} h × ${fmt$(RATE.laborCost)} = ${fmt$(c.l)}</dd><dt>Overhead (18%)</dt><dd>${fmt$(c.o)}</dd><dt><b>Total cost</b></dt><dd><b>${fmt$(c.total)}</b></dd><dt>Customer price</dt><dd>${r.price ? fmt$(r.price) + ' · margin ' + sens('Margin', Math.round((1 - c.total / r.price) * 100) + '%') : 'Covered by maintenance agreement'}</dd></dl></section>
       <section class="panel"><div class="panel-head"><h2>Activity</h2></div><div class="table-wrap"><table><tbody>${r.log.slice().reverse().map(l => `<tr><td class="muted small" style="white-space:nowrap">${l[0]}</td><td><b class="small">${l[1]}</b><div class="small muted">${l[2]}</div></td></tr>`).join('')}</tbody></table></div></section>
     </div>
   </div>
@@ -457,37 +621,168 @@ function formBody(r, s) {
   return T[s.k] || `<dl class="kv"><dt>Owner</dt><dd>${s.role}</dd><dt>Job</dt><dd>${r.title}</dd><dt>Customer</dt><dd>${r.customer}</dd></dl>`;
 }
 
+// ============================================================ dispatch: levels, crews, augmentation, escalation
+const LVL = { 1: 'Level 1: apprentice or helper', 2: 'Level 2: service technician', 3: 'Level 3: senior or master technician' };
+const lvlTag = n => `<span class="lvl l${n}" title="${LVL[n]}">L${n}</span>`;
+const crewOf = q => q.crew || [{ role: 'Lead', lvl: q.pri === 'Urgent' ? 2 : 1, skill: q.skill }];
+const kindOf = q => q.kind || (q.pri === 'Urgent' ? 'Emergency' : 'New call');
+const KIND_PILL = { 'New call': 'plain', 'Crew job': 'info-p', 'Augment': 'warn', 'Escalate': 'bad', 'Emergency': 'bad' };
+const KIND_LABEL = { 'New call': 'New call', 'Crew job': 'Crew job', 'Augment': 'Add people to a job', 'Escalate': 'Escalation', 'Emergency': 'Emergency' };
+const busyAt = (id, s, e) => BOARD.some(b => b.tech === id && b.st !== 'done' && s < b.e && e > b.s);
+const nowBlock = id => BOARD.find(b => b.tech === id && b.s <= NOW_MIN && b.e > NOW_MIN && b.st !== 'done');
+const nextBlock = id => BOARD.filter(b => b.tech === id && b.s > NOW_MIN).sort((a, c) => a.s - c.s)[0];
+const firstStart = q => q.at || Math.ceil((NOW_MIN + 15) / 15) * 15;
+function startFor(q, ids) {   // earliest start when everyone picked is free (a fixed start stays fixed)
+  if (q.at) return q.at;
+  let s = firstStart(q);
+  for (let k = 0; k < 40 && ids.some(id => busyAt(id, s, s + q.mins)); k++) s += 15;
+  return s;
+}
+function candidates(q, slot, taken) {
+  const s0 = firstStart(q);
+  return TECHS.filter(t => t.skills.includes(slot.skill) && t.level >= slot.lvl && !taken.includes(t.id)).map(t => {
+    const van = VANS.find(v => v.id === t.van);
+    const part = slot.role !== 'Helper' && !!van && q.part !== '—' && van.stock.some(st => q.part.toLowerCase().startsWith(st.name.split(' ').slice(0, 2).join(' ').toLowerCase()) && st.qty > 0);
+    const free = !busyAt(t.id, s0, s0 + q.mins), over = t.level - slot.lvl;
+    const score = (free ? 40 : 0) + (part ? 15 : 0) + Math.max(0, 25 - DIST[t.id]) + (over ? -8 * over : 10);   // keep senior people for harder work
+    return { t, part, free, over, score };
+  }).sort((a, b) => b.score - a.score);
+}
+function autoPick(q) {
+  const picks = [];
+  crewOf(q).forEach(slot => { const c = candidates(q, slot, picks)[0]; picks.push(c ? c.t.id : null); });
+  return picks;
+}
+const JOBS = [
+  { id: 'J-24117', title: 'Condenser fan motor replacement', cust: 'Harbor Plaza Offices', trade: 'HVAC', scen: 'B: special parts', status: 'Waiting for approval',
+    people: [['Customer service', 'Tess Morgan'], ['Dispatcher', 'Dana Kim'], ['Lead', 'Marco Diaz (L3)'], ['Purchasing', 'Ana Ruiz'], ['Approval', 'Mike Rowan, service manager'], ['Warehouse', 'Luis Ortega'], ['Accounts payable', 'Grace Hill']] },
+  { id: 'J-24120', title: '3-ton heat pump changeout', cust: 'Okafor residence', trade: 'HVAC', scen: 'C: replacement with permit', status: 'On site',
+    people: [['Sales', 'Elena Cruz, comfort advisor'], ['Dispatcher', 'Dana Kim'], ['Lead', 'Kayla Brooks (L2)'], ['Helper', 'Requested, not assigned'], ['Permits', 'Joy Park'], ['Warehouse', 'Luis Ortega']] },
+  { id: 'J-24122', title: 'No cooling: capacitor and contactor', cust: 'Lopez residence', trade: 'HVAC', scen: 'A: routine call', status: 'On site',
+    people: [['Booking', 'Customer app'], ['Dispatcher', 'Dana Kim'], ['Lead', 'Sam Whitaker (L2)'], ['Senior support', 'Requested, not assigned']] },
+  { id: 'J-24125', title: 'Annual maintenance visit', cust: 'Bayview Condos, unit 4B', trade: 'HVAC', scen: 'D: maintenance agreement', status: 'Completed',
+    people: [['Scheduled by', 'Agreement MA-118'], ['Lead', 'Priya Nair (L1)'], ['Helper', 'Jordan Lee (L1)'], ['Quality check', 'Kayla Brooks (L2)']] },
+  { id: 'J-24127', title: 'PEX inspection', cust: 'Marina Tower', trade: 'Plumbing', scen: 'A: routine call', status: 'On site', people: [['Dispatcher', 'Dana Kim'], ['Lead', 'Lena Ortiz (L3)']] },
+  { id: 'J-24128', title: 'Generator transfer switch service', cust: 'Marina Tower', trade: 'Electrical', scen: 'D: maintenance agreement', status: 'On site', people: [['Dispatcher', 'Dana Kim'], ['Lead', 'Ray Thompson (L3)']] },
+  { id: 'J-24129', title: 'Drain line repair', cust: 'Shell Cove HOA', trade: 'Plumbing', scen: 'A: routine call', status: 'Scheduled 11:00 AM', people: [['Dispatcher', 'Dana Kim'], ['Lead', 'Andre Pierce (L2)'], ['Helper', 'Chris Vega (L1)']] },
+];
+const NOTIFY = [
+  ['7:55 AM', 'Nguyen residence', 'SMS', 'Request received. We will text you a time shortly.'],
+  ['8:41 AM', 'Marina Tower', 'Email', 'Lena Ortiz and Ray Thompson are on the way.'],
+  ['9:31 AM', 'Lopez residence', 'SMS', 'Sam Whitaker is on the way, arriving about 9:45 AM.'],
+  ['10:21 AM', 'Okafor residence', 'SMS', 'Install day update: on schedule, finishing about 4:30 PM.'],
+];
+const ONCALL = [['HVAC', 't1', 't2'], ['Plumbing', 't3', 't4'], ['Electrical', 't9', 't5']];
+const tname = id => TECHS.find(t => t.id === id).name;
+const statusOf = t => { const n = nowBlock(t.id), nx = nextBlock(t.id); return n ? ['info-p', 'On a job'] : nx && nx.s - NOW_MIN <= 45 ? ['warn', 'Heading out'] : ['ok', 'Free now']; };
+
 VIEWS.dispatch = () => {
   const x = m => ((m - 7 * 60) / (11 * 60)) * 100;
   const q = QUEUE.find(j => j.id === STATE.qsel);
-  const sugg = q ? TECHS.map(t => {
-    const skill = t.skills.includes(q.skill) ? 1 : 0, van = VANS.find(v => v.id === t.van), hasPart = van.stock.some(s => q.part.toLowerCase().startsWith(s.name.split(' ').slice(0, 2).join(' ').toLowerCase()) && s.qty > 0) ? 1 : 0;
-    const busyNow = BOARD.some(b => b.tech === t.id && b.s <= NOW_MIN && b.e > NOW_MIN && b.st !== 'done');
-    const score = skill * 50 + hasPart * 20 + (busyNow ? 0 : 15) + Math.max(0, 25 - DIST[t.id]);
-    return { t, skill, hasPart, busyNow, score };
-  }).sort((a, b) => b.score - a.score) : [];
+  if (q && (!STATE.picks || STATE.picksFor !== q.id)) { STATE.picks = autoPick(q); STATE.picksFor = q.id; }
+  const slots = q ? crewOf(q) : [], picks = q ? STATE.picks : [];
+  const start = q && picks.every(Boolean) ? startFor(q, picks) : null;
+  const free = TECHS.filter(t => statusOf(t)[1] === 'Free now').length, onjob = TECHS.filter(t => nowBlock(t.id)).length;
+  const trades = ['HVAC', 'Plumbing', 'Electrical'].map(tr => {
+    const ts = TECHS.filter(t => (t.skills[0] === 'Electronics' ? 'HVAC' : t.skills[0]) === tr);
+    const booked = BOARD.filter(b => ts.some(t => t.id === b.tech)).reduce((s, b) => s + (b.e - b.s), 0) / 60;
+    return [tr, ts.length, booked, ts.length * 9];
+  });
+  const stages = [['Issues to address', QUEUE.length], ['Scheduled', JOBS.filter(j => j.status.startsWith('Scheduled')).length], ['On site now', JOBS.filter(j => j.status === 'On site').length],
+    ['Waiting on parts or approval', JOBS.filter(j => j.status.startsWith('Waiting')).length], ['Completed today', JOBS.filter(j => j.status === 'Completed').length]];
+  const maxStage = Math.max(1, ...stages.map(s => s[1]));
   view(`
-  <h1>Dispatch</h1><p class="lead">Drag-free demo of the dispatch board: pick a waiting job and WAMWins ranks technicians by skill, availability, distance and whether the part is already on their van.</p>
-  <div class="board" style="margin-top:16px"><div class="board-inner">
+  <h1>Dispatch</h1><p class="lead">The dispatch office in one place: issues to address, crews with the right technician levels, today's board, who is where, and everyone involved in each job.</p>
+  <div class="kpis" style="margin-top:16px">
+    <a class="kpi ${QUEUE.some(j => j.pri !== 'Normal') ? 'alert' : ''}" href="#dispatch" data-jump="issues"><span class="v">${QUEUE.length}</span><span class="l">Issues to address</span><span class="note">${QUEUE.filter(j => crewOf(j).length > 1).length} need more than one person · ${QUEUE.filter(j => j.pri !== 'Normal').length} high or urgent</span></a>
+    <a class="kpi" href="#dispatch" data-jump="techs"><span class="v">${TECHS.length}</span><span class="l">Technicians on shift</span><span class="note">${free} free now · ${onjob} on a job</span></a>
+    <a class="kpi" href="#dispatch" data-jump="jobs"><span class="v">${JOBS.length}</span><span class="l">Jobs today</span><span class="note">${JOBS.filter(j => j.status === 'Completed').length} completed · ${JOBS.filter(j => j.people.filter(p => /\(L\d\)/.test(p[1])).length > 1).length} with a crew</span></a>
+    <div class="kpi"><span class="v">38 min</span><span class="l">Dispatch to arrival</span><span class="note">Average this week, sample data</span></div>
+    <div class="kpi"><span class="v">86%</span><span class="l">Fixed on the first visit</span><span class="note">This month, sample data</span></div>
+    <a class="kpi" href="#dispatch" data-jump="oncall"><span class="v">${tname('t1').split(' ')[0]}</span><span class="l">On call tonight (HVAC)</span><span class="note">Plumbing ${tname('t3').split(' ')[0]} · electrical ${tname('t9').split(' ')[0]}</span></a>
+  </div>
+  <div class="grid g-side" style="margin-top:16px">
+    <section class="panel" id="sec-issues"><div class="panel-head"><h2>Issues to address</h2>${info('Issues to address', 'Everything waiting for a decision: new calls, crew jobs that need several people, requests to add people to a job already running, and escalations to a higher technician level. Calls, the customer portal, maintenance agreements and Loxone alerts all land here.')}</div>
+      <div class="list">${QUEUE.length ? QUEUE.map(j => { const c = crewOf(j), k = kindOf(j); return `<button class="item ${j.id === STATE.qsel ? 'sel' : ''}" type="button" data-q="${j.id}"><div class="top"><b>${j.title}</b>${pill(j.pri === 'Urgent' ? 'bad' : j.pri === 'High' ? 'warn' : 'plain', j.pri)}</div>
+        <div class="row" style="gap:6px">${pill(KIND_PILL[k], KIND_LABEL[k])}${j.job ? `<span class="small muted">on ${j.job}</span>` : ''}<span class="small">${c.length > 1 ? `<b>${c.length} people:</b> ` : 'Needs '}${c.map(s => `${s.role.toLowerCase()} ${lvlTag(s.lvl)}`).join(', ')}</span></div>
+        <span class="small muted">${j.customer} · ${j.skill}${j.part !== '—' ? ' · ' + j.part : ''}${j.at ? ' · starts ' + hhmm(j.at) : ''}</span></button>`; }).join('') : '<p class="muted">Nothing to address. Every job is on the board.</p>'}</div></section>
+    <section class="panel" id="sec-crew"><div class="panel-head"><h2>${q ? (slots.length > 1 ? 'Build the crew' : 'Choose the technician') + ' for ' + q.id : 'Crew and technician'}</h2>${info('Choosing people', 'Each person needed is a slot with a role, a minimum level and a trade. Only technicians at that level or higher are offered, ranked by who is free, distance and whether the part is on their van. Senior technicians are held back from simple work when someone at the right level is free.')}</div>
+      ${q ? `<p class="small" style="margin-bottom:6px"><b>${q.title}</b> · ${q.customer}</p>
+        <p class="small muted" style="margin-bottom:10px">${q.by || 'New request'}${q.why ? '. ' + q.why + '.' : ''}</p>
+        ${slots.map((sl, i) => { const cs = candidates(q, sl, picks.filter((p, j) => j !== i && p)).slice(0, 3); return `<div class="slot"><div class="slot-head"><b>${i + 1}. ${sl.role}</b> ${lvlTag(sl.lvl)} <span class="small muted">${sl.skill}, level ${sl.lvl} or higher</span></div>
+          ${cs.length ? `<div class="list">${cs.map(c => `<button class="item opt ${picks[i] === c.t.id ? 'sel' : ''}" type="button" data-slot="${i}" data-tech="${c.t.id}" aria-pressed="${picks[i] === c.t.id}"><div class="top"><b>${c.t.name} ${lvlTag(c.t.level)}</b><span class="small muted">${DIST[c.t.id]} mi</span></div>
+            <div class="row" style="gap:6px">${c.free ? pill('ok', 'Free at ' + hhmm(firstStart(q))) : pill('warn', 'Busy then: starts later')}${c.part ? pill('ok', 'Part on ' + c.t.van) : ''}${c.over ? pill('plain', 'Above the level needed') : ''}</div></button>`).join('')}</div>` : '<p class="small" style="color:var(--red)">No qualified technician on shift. Ask the service manager or call in on-call staff.</p>'}</div>`; }).join('')}
+        <div class="row" style="justify-content:space-between;margin-top:12px"><span class="small">${start ? `Start <b>${hhmm(start)}</b> · ${q.mins} min${q.job ? ' · added to ' + q.job : ''}` : 'Pick someone for every slot'}</span>
+          <div class="row">${q.remote ? `<button class="btn" type="button" id="remote" ${picks[0] ? '' : 'disabled'}>Remote video assist first</button>` : ''}<button class="btn primary" type="button" id="dsend" ${start ? '' : 'disabled'}>${slots.length > 1 ? 'Dispatch crew' : q.kind === 'Augment' ? 'Add to job' : 'Dispatch'}</button></div></div>`
+      : '<p class="muted">Choose an issue to see who should go. Jobs that need several people get one slot per person, each with its minimum level.</p>'}</section>
+  </div>
+  <section class="panel" id="sec-board" style="margin-top:16px"><div class="panel-head"><h2>Today's board</h2>${info('Board', 'One row per technician, including apprentices who ride with a lead. Crew members on the same job appear in each person\'s row at the same time. The red line is now.')}</div>
+  <div class="board"><div class="board-inner">
     <div class="b-row b-head"><div class="b-name"><b>Technician</b></div><div class="b-track">${Array.from({ length: 11 }, (_, i) => `<span>${hhmm((7 + i) * 60).replace(':00', '')}</span>`).join('')}</div></div>
-    ${TECHS.map(t => `<div class="b-row"><div class="b-name"><b>${t.name}</b><span class="muted">${t.van} · ${t.skills.join(', ')}</span></div><div class="b-track"><div class="nowline" style="left:${x(NOW_MIN)}%" aria-hidden="true"></div>${BOARD.filter(b => b.tech === t.id).map(b => `<div class="blk ${b.st || ''}" style="left:${x(b.s)}%;width:${x(b.e) - x(b.s)}%" title="${b.t}"><b>${b.t}</b>${hhmm(b.s)}–${hhmm(b.e)}</div>`).join('')}</div></div>`).join('')}
-  </div></div>
+    ${TECHS.map(t => `<div class="b-row"><div class="b-name"><b>${t.name} ${lvlTag(t.level)}</b><span class="muted">${t.van || 'No van'} · ${t.skills.join(', ')}</span></div><div class="b-track"><div class="nowline" style="left:${x(NOW_MIN)}%" aria-hidden="true"></div>${BOARD.filter(b => b.tech === t.id).map(b => { const [c, w] = b.t.split(' · '), work = w ? w[0].toUpperCase() + w.slice(1) : b.t; return `<div class="blk ${b.st || ''}" style="left:${x(b.s)}%;width:${x(b.e) - x(b.s)}%" title="${VIEWER.restricted ? work : b.t}"><b>${w ? work + ' · ' + c : b.t}</b>${hhmm(b.s)}–${hhmm(b.e)}</div>`; }).join('')}</div></div>`).join('')}
+  </div></div></section>
+  <section class="panel" id="sec-techs" style="margin-top:16px"><div class="panel-head"><h2>Technician status</h2><span class="sub">at ${hhmm(NOW_MIN)}</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Technician</th><th>Level</th><th>Trades</th><th>Now</th><th>Current or next job</th><th>Vehicle</th><th class="num">Booked today</th></tr></thead><tbody>
+    ${TECHS.map(t => { const st = statusOf(t), n = nowBlock(t.id) || nextBlock(t.id), mins = BOARD.filter(b => b.tech === t.id).reduce((s, b) => s + (b.e - b.s), 0); return `<tr><td><b>${t.name}</b></td><td>${lvlTag(t.level)}</td><td class="small">${t.skills.join(', ')}</td><td>${pill(st[0], st[1])}</td>
+      <td class="small">${n ? `${n.t} <span class="muted">· ${hhmm(n.s)}–${hhmm(n.e)}</span>` : '<span class="muted">Nothing booked</span>'}</td><td class="small">${t.van || t.note}</td><td class="num">${(mins / 60).toFixed(1)} h</td></tr>`; }).join('')}
+    </tbody></table></div></section>
+  <section class="panel" id="sec-jobs" style="margin-top:16px"><div class="panel-head"><h2>Jobs today and everyone involved</h2>${info('People involved', 'Every job lists each person who touches it, from the first call to payment: customer service, dispatcher, the lead and crew with their levels, sales, purchasing, approvals, warehouse, permits and accounts. Adding people to a running job or escalating it updates this list.')}</div>
+    <div class="table-wrap"><table><thead><tr><th>Job</th><th>Trade</th><th>Scenario</th><th>People involved</th><th>Status</th></tr></thead><tbody>
+    ${JOBS.map(j => `<tr><td><b>${j.id}</b><div class="small">${j.title}</div><div class="small muted">${j.cust}</div></td><td class="small">${j.trade}</td><td class="small">${j.scen}</td>
+      <td><div class="people">${j.people.map(([r, n]) => `<span class="person ${/Requested/.test(n) ? 'open' : ''}"><span class="muted">${r}:</span> ${n.replace(/\((L\d)\)/, (m, l) => lvlTag(+l[1]))}</span>`).join('')}</div></td>
+      <td>${pill(j.status === 'Completed' ? 'ok' : j.status === 'On site' ? 'info-p' : j.status.startsWith('Waiting') ? 'warn' : 'plain', j.status)}</td></tr>`).join('')}
+    </tbody></table></div></section>
   <div class="grid g2" style="margin-top:16px">
-    <section class="panel"><div class="panel-head"><h2>Waiting to be dispatched</h2>${info('Queue', 'Customer requests, maintenance visits and Loxone incidents all arrive here. Incidents from monitoring are marked urgent.')}</div>
-      <div class="list">${QUEUE.length ? QUEUE.map(j => `<button class="item ${j.id === STATE.qsel ? 'sel' : ''}" type="button" data-q="${j.id}"><div class="top"><b>${j.title}</b>${pill(j.pri === 'Urgent' ? 'bad' : j.pri === 'High' ? 'warn' : 'plain', j.pri)}</div><span class="small muted">${j.customer} · needs ${j.skill} · ${j.part}</span></button>`).join('') : '<p class="muted">Nothing waiting. Every job is on the board.</p>'}</div></section>
-    <section class="panel"><div class="panel-head"><h2>${q ? 'Best technicians for ' + q.id : 'Technician suggestions'}</h2></div>
-      ${q ? `<div class="list">${sugg.slice(0, 4).map((s, i) => `<div class="item"><div class="top"><b>${i + 1}. ${s.t.name}</b><span class="small muted">${DIST[s.t.id]} mi</span></div>
-        <div class="row">${s.skill ? pill('ok', q.skill) : pill('bad', 'No ' + q.skill)}${s.hasPart ? pill('ok', 'Part on ' + s.t.van) : pill('warn', 'Part not on van')}${s.busyNow ? pill('warn', 'On a job now') : pill('ok', 'Free now')}</div>
-        <div class="row" style="justify-content:space-between"><div class="bar" style="flex:1"><i style="width:${Math.round(s.score / 1.1)}%"></i></div><button class="btn sm ${i === 0 ? 'primary' : ''}" type="button" data-assign="${s.t.id}">Assign</button></div></div>`).join('')}</div>` : '<p class="muted">Choose a waiting job to see who should take it.</p>'}</section>
-  </div>`);
-  el('view').querySelectorAll('[data-q]').forEach(b => b.onclick = () => { STATE.qsel = b.dataset.q; VIEWS.dispatch(); });
-  el('view').querySelectorAll('[data-assign]').forEach(b => b.onclick = () => {
-    const t = TECHS.find(x => x.id === b.dataset.assign), mine = BOARD.filter(x => x.tech === t.id).sort((a, c) => a.s - c.s);
-    let s = Math.ceil((NOW_MIN + 15) / 15) * 15; for (const m of mine) if (s < m.e && s + q.mins > m.s) s = Math.ceil(m.e / 15) * 15;
-    BOARD.push({ tech: t.id, s, e: s + q.mins, t: q.customer.split(',')[0] + ' · ' + q.title.toLowerCase(), st: q.pri === 'Urgent' ? 'urgent new' : 'new' });
+    <section class="panel" id="sec-flow"><div class="panel-head"><h2>Job status today</h2></div>
+      <div class="list">${stages.map(([l, n]) => `<div class="score"><div><div class="small">${l}</div><div class="bar"><i style="width:${Math.round(n / maxStage * 100)}%"></i></div></div><b>${n}</b></div>`).join('')}</div></section>
+    <section class="panel" id="sec-capacity"><div class="panel-head"><h2>Capacity by trade</h2>${info('Capacity', 'Hours booked on the board against each trade\'s hours on shift (9 hours per technician). Above about 85% there is little room for emergencies.')}</div>
+      <div class="list">${trades.map(([tr, n, b, cap]) => { const pc = Math.round(b / cap * 100); return `<div class="score"><div><div class="small">${tr} · ${n} technicians · ${b.toFixed(1)} h of ${cap} h</div><div class="bar"><i style="width:${Math.min(100, pc)}%;${pc > 85 ? 'background:var(--red)' : ''}"></i></div></div><b>${pc}%</b></div>`; }).join('')}</div></section>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <section class="panel" id="sec-notify"><div class="panel-head"><h2>Customer updates sent</h2>${info('Customer updates', 'Customers are told when a request is received, when a technician is on the way with an arrival time, and when plans change. Texts honor SMS opt-outs.')}</div>
+      <div class="table-wrap"><table><tbody>${NOTIFY.slice().reverse().map(n => `<tr><td class="small muted" style="white-space:nowrap">${n[0]}</td><td class="small"><b>${n[1]}</b> · ${n[2]}<div>${n[3]}</div></td></tr>`).join('')}</tbody></table></div></section>
+    <section class="panel" id="sec-oncall"><div class="panel-head"><h2>On call tonight</h2>${info('After hours', 'After 6 PM calls go to AI phone answering. Emergencies (no cooling or heat with vulnerable occupants, active leaks, burning smell, tripped main) page the on-call technician; everything else is booked for the morning.')}</div>
+      <div class="table-wrap"><table><thead><tr><th>Trade</th><th>On call</th><th>Backup</th></tr></thead><tbody>${ONCALL.map(([tr, a, b]) => { const A = TECHS.find(t => t.id === a), B = TECHS.find(t => t.id === b); return `<tr><td>${tr}</td><td>${A.name} ${lvlTag(A.level)}</td><td>${B.name} ${lvlTag(B.level)}</td></tr>`; }).join('')}</tbody></table></div>
+      <p class="small muted" style="margin-top:8px">6 PM to 7 AM. Escalations go to Mike Rowan (service manager).</p></section>
+  </div>
+  <section class="panel" id="sec-scen" style="margin-top:16px"><div class="panel-head"><h2>Technician levels and dispatch scenarios</h2></div>
+    <div class="grid g3" style="margin-bottom:14px">${[1, 2, 3].map(n => `<div class="item"><b>${lvlTag(n)} ${LVL[n].split(': ')[1][0].toUpperCase() + LVL[n].split(': ')[1].slice(1)}</b><span class="small">${['Maintenance visits, filters and cleaning, helping on installs and crews, simple repairs with a lead nearby.', 'Diagnosis and repair on residential systems, leading residential installs and routine commercial calls.', 'Commercial systems and controls, refrigerant circuit and compressor work, crew lead on large jobs, senior support for others.'][n - 1]}</span></div>`).join('')}</div>
+    <div class="grid g3">${[
+      ['One technician', 'Routine call', 'Customer service or AI phone takes the call → dispatcher picks one technician at the right level → customer gets an arrival time → office invoices.'],
+      ['Higher level required', 'Minimum level on the job', 'The issue states a minimum level, so only qualified technicians are offered. Senior people are held back from simple work when someone at the right level is free.'],
+      ['Crew job', 'Several people, one job', 'The service manager sets the crew at estimate approval (lead, installer, helper). The dispatcher books everyone for the same start; all time and costs go to one job.'],
+      ['Add people to a running job', 'Augmentation', 'The lead asks for help from the field app. The request lands here, the dispatcher adds people to the same job, and the lead is told when help arrives. The customer is not re-booked.'],
+      ['Escalation', 'Senior support', 'A level 1 or 2 technician asks for level 3 help. Remote video assist comes first; a senior visit is booked only if needed. The service manager sees every escalation.'],
+      ['Emergency and after hours', 'Urgent', 'A Loxone alarm or emergency call is marked urgent and goes to the top. After 6 PM the on-call technician is paged and the customer gets an arrival time.'],
+    ].map(([h, k, d]) => `<div class="item"><div class="top"><b>${h}</b><span class="small muted">${k}</span></div><span class="small">${d}</span></div>`).join('')}</div></section>`);
+  const V = el('view');
+  V.querySelectorAll('[data-jump]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); el('sec-' + a.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+  V.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { STATE.qsel = b.dataset.q; VIEWS.dispatch(); if (innerWidth < 1080) el('sec-crew').scrollIntoView({ block: 'start' }); });
+  V.querySelectorAll('[data-slot]').forEach(b => b.onclick = () => { STATE.picks[+b.dataset.slot] = b.dataset.tech; VIEWS.dispatch(); el('sec-crew').scrollIntoView({ block: 'nearest' }); });
+  V.querySelector('#dsend')?.addEventListener('click', () => {
+    const crew = slots.map((sl, i) => [sl, TECHS.find(t => t.id === picks[i])]), end = start + q.mins, lead = crew[0][1];
+    confirmBox({ title: `${q.kind === 'Augment' ? 'Add to ' + q.job : 'Dispatch ' + q.id}?`, ok: slots.length > 1 ? 'Dispatch crew' : q.kind === 'Augment' ? 'Add to job' : 'Dispatch',
+      check: 'I checked the people, levels and time with the job requirements.',
+      html: `<p class="small"><b>${q.title}</b> · ${q.customer}</p><p class="small" style="margin:4px 0 10px">${hhmm(start)}–${hhmm(end)}${q.job ? ' · joins ' + q.job : ''}</p>
+        <div class="table-wrap"><table><thead><tr><th>Role</th><th>Person</th><th>Level</th></tr></thead><tbody>${crew.map(([sl, t]) => `<tr><td>${sl.role}</td><td>${t.name}</td><td>${lvlTag(t.level)} <span class="small muted">needs ${sl.lvl}+</span></td></tr>`).join('')}</tbody></table></div>
+        <p class="small muted" style="margin-top:10px">Notified: ${crew.map(c => c[1].name.split(' ')[0]).join(', ')} in the app${q.kind === 'Augment' || q.kind === 'Escalate' ? ', the technician on site' : ', the customer by SMS and email'}, and Dana Kim (dispatcher).</p>`,
+      onOk: () => {
+        const jobId = q.job || 'J-' + (24130 + JOBS.length), short = q.customer.split(',')[0];
+        crew.forEach(([sl, t]) => BOARD.push({ tech: t.id, s: start, e: end, t: `${short} · ${q.title.toLowerCase()}${sl.role === 'Lead' ? '' : ' (' + sl.role.toLowerCase() + ')'}`, st: q.pri === 'Urgent' ? 'urgent new' : 'new' }));
+        let job = JOBS.find(j => j.id === jobId);
+        if (!job) { job = { id: jobId, title: q.title, cust: q.customer, trade: q.skill, scen: kindOf(q) === 'Crew job' ? 'Crew job' : kindOf(q) === 'Emergency' ? 'Emergency' : 'A: routine call', status: 'Scheduled ' + hhmm(start), people: [['Dispatcher', 'Dana Kim']] }; JOBS.push(job); }
+        crew.forEach(([sl, t]) => { const who = `${t.name} (L${t.level})`, row = job.people.find(p => p[0] === sl.role && /Requested/.test(p[1])); if (row) row[1] = who; else job.people.push([sl.role, who]); });
+        NOTIFY.push([hhmm(NOW_MIN), q.customer.split(',')[0], 'SMS', q.kind === 'Augment' ? `A second technician joins the crew at ${hhmm(start)}.` : `${lead.name} ${crew.length > 1 ? 'and crew are' : 'is'} scheduled for ${hhmm(start)}.`]);
+        QUEUE.splice(QUEUE.indexOf(q), 1); STATE.qsel = null;
+        toast(q.kind === 'Augment' ? `${crew.map(c => c[1].name).join(', ')} added to ${jobId} from ${hhmm(start)}. ${q.by.split(' ')[2]} ${q.by.split(' ')[3]} notified.` : `${q.id} dispatched: ${crew.map(c => c[1].name).join(', ')} at ${hhmm(start)}. Customer notified.`);
+        renderNav(); VIEWS.dispatch();
+      } });
+  });
+  V.querySelector('#remote')?.addEventListener('click', () => {
+    const t = TECHS.find(x => x.id === picks[0]), job = JOBS.find(j => j.id === q.job);
+    if (job) { const row = job.people.find(p => /Requested/.test(p[1])); if (row) row[1] = `${t.name} (L${t.level}), remote video`; }
     QUEUE.splice(QUEUE.indexOf(q), 1); STATE.qsel = null;
-    toast(`${q.id} dispatched to ${t.name} for ${hhmm(s)}. Customer notified by SMS and email.`);
-    renderNav(); VIEWS.dispatch();
+    toast(`${t.name} joined ${q.job} by video. A site visit is booked only if the remote diagnosis needs one.`); renderNav(); VIEWS.dispatch();
   });
 };
 
@@ -526,8 +821,8 @@ VIEWS.monitoring = () => {
     <div class="chan"><div><b>App alarm</b><br>Site admin, on-call dispatcher</div><div><b>Email</b><br>Sent to 3 people</div><div><b>SMS</b><br>Sent to 3 people</div><div><b>Acknowledged</b><br>${inc.ack ? 'Yes, by ' + inc.ack : 'Waiting · repeats in 5 min'}</div></div>
     <div class="row">${inc.ack ? '' : '<button class="btn" type="button" id="ack">Acknowledge</button>'}${inc.status === 'open' ? '<button class="btn primary" type="button" id="todisp">Create dispatch job</button>' : '<a class="btn" href="#dispatch">Open dispatch</a>'}</div></div>` : ''}
   <div class="grid g-side" style="margin-top:16px">
-    <section class="panel"><div class="panel-head"><h2>Connected sites</h2>${info('Connect with', 'Each site is paired with its Loxone Miniserver through Connect with. WAMWins reads the controls the Miniserver lists and maps them to devices in the hardware library. It sends no commands to customer systems.')}</div>
-      <div class="row" style="margin-bottom:12px">${SITES.map(x => `<button class="btn sm ${x.id === s.id ? 'blue' : ''}" type="button" data-site="${x.id}">${x.name}</button>`).join('')}</div>
+    <section class="panel"><div class="panel-head"><h2>Connected sites</h2>${info('Connect with', 'Each site is paired with its Loxone Miniserver through Connect with. The controls the Miniserver lists are read and mapped to devices in the hardware library. No commands are sent to customer systems.')}</div>
+      <div class="row" style="margin-bottom:12px">${SITES.map((x, i) => `<button class="btn sm ${x.id === s.id ? 'blue' : ''}" type="button" data-site="${x.id}">Site ${i + 1}: ${x.name}</button>`).join('')}</div>
       <div class="row small muted" style="margin-bottom:8px">${s.kind} · ${s.ctl} · ${pill('ok', 'Online')} last reading 10:29 AM</div>
       <div class="table-wrap"><table><thead><tr><th>Sensor</th><th class="num">Reading</th><th>Status</th></tr></thead><tbody>${s.sensors.map(r => `<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td>${r[2] === 'ok' ? pill('ok', 'Normal') : r[2] === 'bad' ? pill('bad', 'Alarm') : pill('warn', 'Watch')}</td></tr>`).join('')}</tbody></table></div>
       ${s.id === 's1' && !STATE.incidents.length ? '<div class="row" style="margin-top:12px"><button class="btn danger" type="button" id="sim">Simulate a leak at this site</button><span class="small muted">Demo only</span></div>' : ''}</section>
@@ -560,7 +855,7 @@ VIEWS.monitoring = () => {
   };
   const ack = el('ack'); if (ack) ack.onclick = () => { inc.ack = 'Dana Ruiz (on-call dispatcher)'; toast('Alarm acknowledged. Escalation stopped.'); VIEWS.monitoring(); };
   const td = el('todisp'); if (td) td.onclick = () => {
-    QUEUE.unshift({ id: 'Q-' + (554 + STATE.incidents.length), title: 'Leak: 3rd floor riser', customer: 'Harbor Plaza Offices, Riviera Beach', skill: 'Plumbing', part: 'PEX-A pipe 3/4"', mins: 120, pri: 'Urgent' });
+    QUEUE.unshift({ id: nextQ(), title: 'Leak: 3rd floor riser', customer: 'Harbor Plaza Offices, Riviera Beach', skill: 'Plumbing', part: 'PEX-A pipe 3/4"', mins: 120, pri: 'Urgent' });
     inc.status = 'dispatched'; STATE.qsel = QUEUE[0].id; toast('Urgent job created from the incident. Choose a technician.'); location.hash = '#dispatch';
   };
   el('send').onclick = () => { const a = { msg: el('msg').value, ack: false }; b.alerts.unshift(a); toast('Alert sent to ' + b.tech + '.'); VIEWS.monitoring(); setTimeout(() => { a.ack = true; if (STATE.route === 'monitoring') VIEWS.monitoring(); }, 2500); };
@@ -591,11 +886,11 @@ function drawCam() {   // a still, stylized placeholder for the live camera (no 
 
 VIEWS.cost = () => {
   view(`
-  <h1>Cost vs ServiceTitan</h1><p class="lead">Move the sliders to match Cassidy's numbers. ServiceTitan does not publish prices; the per-technician range is from third-party reports. The WAMWins license is an example, not a price.</p>
+  <h1>Cost vs ServiceTitan</h1><p class="lead">Move the sliders to match Cassidy's numbers. ServiceTitan does not publish prices; the per-technician range is from third-party reports. The license price is an example, not a quote.</p>
   <section class="panel" style="margin-top:16px"><div class="inputs">
     <div class="field"><label for="techs">Field technicians: <output id="o-techs"></output></label><input id="techs" type="range" min="20" max="120" step="5" value="60"></div>
     <div class="field"><label for="st">ServiceTitan per technician per month: <output id="o-st"></output></label><input id="st" type="range" min="245" max="500" step="5" value="245"></div>
-    <div class="field"><label for="lic">WAMWins license per technician per month: <output id="o-lic"></output></label><input id="lic" type="range" min="50" max="245" step="5" value="150"></div>
+    <div class="field"><label for="lic">Platform license per technician per month: <output id="o-lic"></output></label><input id="lic" type="range" min="50" max="245" step="5" value="150"></div>
     <div class="field"><label for="host">Hosting per month: <output id="o-host"></output></label><input id="host" type="range" min="500" max="3000" step="100" value="1500"></div>
   </div></section>
   <div class="grid g-side" style="margin-top:16px">
@@ -611,16 +906,16 @@ VIEWS.cost = () => {
     // Employer costs (30%) apply to every salary in every option.
     const dir = 118000 * 1.3, devs = 2 * 130980 * 1.3, hostY = host * 12;
     const A = n * st * 12 + dir, B = dir + devs + hostY, C = n * lic * 12 + hostY + dir;
-    const opts = [['A. Stay on ServiceTitan', A, 'var(--ink-3)'], ['B. Build it alone', B, 'var(--ink-3)'], ['C. License WAMWins', C, 'var(--blue)']];
+    const opts = [['A. Stay on ServiceTitan', A, 'var(--ink-3)'], ['B. Build it alone', B, 'var(--ink-3)'], ['C. License the platform', C, 'var(--blue)']];
     const max = Math.max(A, B, C) * 1.08, W = 520, rowH = 54;
     el('costchart').innerHTML = `<svg viewBox="0 0 ${W} ${opts.length * rowH + 10}" role="img" aria-label="Annual cost of the three options" style="width:100%;height:auto">${opts.map((o, i) => {
       const y = i * rowH + 8, w = (o[1] / max) * (W - 150);
       return `<text x="0" y="${y + 13}" font-size="12.5" fill="var(--ink)" font-weight="${i === 2 ? 600 : 400}">${o[0]}</text><rect x="0" y="${y + 20}" width="${w}" height="20" rx="4" fill="${o[2]}" ${i === 2 ? '' : 'fill-opacity=".45"'}/><text x="${w + 8}" y="${y + 35}" font-size="13" font-weight="600" fill="var(--ink)">${fmt$(o[1])}</text>`;
     }).join('')}</svg>`;
     const save = A - C;
-    el('saving').innerHTML = save > 0 ? `<span>Option C saves Cassidy</span><b>${fmt$(save)} a year</b><span class="small">compared with staying on ServiceTitan, before ServiceTitan's one-time implementation fee of $5,000–$50,000</span>` : `<span>At these settings WAMWins does not save money</span><b>${fmt$(-save)} more a year</b><span class="small">Lower the license price or check the technician count.</span>`;
+    el('saving').innerHTML = save > 0 ? `<span>Option C saves Cassidy</span><b>${fmt$(save)} a year</b><span class="small">compared with staying on ServiceTitan, before ServiceTitan's one-time implementation fee of $5,000–$50,000</span>` : `<span>At these settings licensing does not save money</span><b>${fmt$(-save)} more a year</b><span class="small">Lower the license price or check the technician count.</span>`;
     el('saving').style.background = save > 0 ? '' : 'var(--red-soft)'; el('saving').style.color = save > 0 ? '' : 'var(--red)';
-    el('breakdown').innerHTML = `<dt>ServiceTitan subscription</dt><dd>${fmt$(n * st * 12)}</dd><dt>WAMWins license</dt><dd>${fmt$(n * lic * 12)}</dd><dt>Hosting</dt><dd>${fmt$(hostY)}</dd><dt>IT director + 30% (all options)</dt><dd>${fmt$(dir)}</dd><dt>Two developers + 30% (option B)</dt><dd>${fmt$(devs)}</dd>`;
+    el('breakdown').innerHTML = `<dt>ServiceTitan subscription</dt><dd>${fmt$(n * st * 12)}</dd><dt>Platform license</dt><dd>${fmt$(n * lic * 12)}</dd><dt>Hosting</dt><dd>${fmt$(hostY)}</dd><dt>IT director + 30% (all options)</dt><dd>${fmt$(dir)}</dd><dt>Two developers + 30% (option B)</dt><dd>${fmt$(devs)}</dd>`;
   };
   ids.forEach(i => el(i).addEventListener('input', calc)); calc();
 };
@@ -669,7 +964,9 @@ VIEWS.warehouse = () => {
   const statusPill = i => i.qty < i.min ? pill('bad', 'Below minimum') : i.qty <= i.min * 1.2 ? pill('warn', 'Near minimum') : i.idle > 60 ? pill('info-p', 'Slow moving') : pill('ok', 'OK');
   view(`
   <h1>Warehouse</h1><p class="lead">${WH.name}: stock by zone and bin, receiving against purchase orders, tonight's van restock and every movement through the doors.</p>
-  <div class="kpis" style="margin-top:16px">
+  <section class="summary-note" id="sec-summary" aria-labelledby="inv-sum"><div class="row" style="gap:8px"><h2 id="inv-sum">Inventory summary</h2><span class="pill plain">As of ${hhmm(NOW_MIN)} today</span></div>
+    <p class="small">These figures cover the <b>main warehouse only</b>; stock already on the vans is on <a href="#inventory">Van inventory</a>. <b>Stock value</b> is what the shelves hold, at last purchase cost. <b>Below minimum</b> counts items that need a purchase request. <b>Deliveries due</b> are purchase orders expected today. <b>Vans to restock</b> come from what each van used today. <b>Door movements</b> are items the RFID readers and cameras could not match to a checkout.</p></section>
+  <div class="kpis" style="margin-top:12px">
     <div class="kpi"><span class="v">${fmt$(total)}</span><span class="l">Stock value on hand</span><span class="note">${WH.items.length} SKUs in ${WH.zones.length} zones</span></div>
     <a class="kpi ${low.length ? 'alert' : ''}" href="#warehouse" data-jump="stock"><span class="v">${low.length}</span><span class="l">Items below minimum</span><span class="note">${low.length ? 'Reorder requests needed' : 'All above minimum'}</span></a>
     <a class="kpi" href="#warehouse" data-jump="inbound"><span class="v">${due.length}</span><span class="l">Deliveries due today</span><span class="note">Receive against the PO</span></a>
@@ -677,13 +974,13 @@ VIEWS.warehouse = () => {
     <a class="kpi ${whReview() ? 'alert' : ''}" href="#warehouse" data-jump="portal"><span class="v">${whReview()}</span><span class="l">Door movements to review</span><span class="note">RFID and camera at the doors</span></a>
   </div>
   <div class="grid g-side" style="margin-top:16px">
-    <section class="panel"><div class="panel-head"><h2>Stock value by zone</h2>${info('Zones', 'The warehouse uses the same storage hierarchy as the rest of WAMWins: warehouse, zone, shelf and bin, with no limit on depth.')}</div>
+    <section class="panel"><div class="panel-head"><h2>Stock value by zone</h2>${info('Zones', 'The warehouse uses the same storage hierarchy as the rest of the app: warehouse, zone, shelf and bin, with no limit on depth.')}</div>
       <div class="list">${byZone.map(z => `<button class="score" type="button" data-zone="${z[0]}" style="background:none;border:0;padding:4px 0;text-align:left"><div><div class="small">Zone ${z[0]} · ${z[1]}</div><div class="bar"><i style="width:${Math.round(z[2] / maxZ * 100)}%"></i></div></div><b>${fmt$(z[2])}</b></button>`).join('')}</div></section>
     <section class="panel" id="sec-restock"><div class="panel-head"><h2>Tonight's van restock</h2>${info('Restock', 'Each van is refilled to its minimum from what it used today, so technicians start the morning with what their usual calls need instead of driving to a supply house.')}</div>
-      <div class="list">${VANS.filter(v => restockFor(v).length).map(v => { const r = restockFor(v), done = WH.released[v.id]; return `<div class="item"><div class="top"><b>${v.id} · ${TECHS.find(t => t.id === v.tech).name}</b>${done ? pill('ok', 'Released') : pill('warn', r.length + ' lines')}</div>
+      <div class="list">${VANS.filter(v => restockFor(v).length).map(v => { const r = restockFor(v), done = WH.released[v.id]; return `<div class="item"><div class="top"><b>${v.id} · ${TECHS.find(t => t.id === v.tech).name}</b>${done ? pill('ok', 'Released') : pill('warn', r.length + (r.length === 1 ? ' line' : ' lines'))}</div>
         <span class="small muted">${r.map(x => `${x.need} × ${x.s.name}`).join(' · ')}</span>${done ? '' : `<div><button class="btn sm primary" type="button" data-release="${v.id}">Pick and release</button></div>`}</div>`; }).join('') || '<p class="muted">Every van is at its minimum.</p>'}</div></section>
   </div>
-  <section class="panel" id="sec-inbound" style="margin-top:16px"><div class="panel-head"><h2>Receiving</h2>${info('Three-way match', 'Receiving records what arrived against the purchase order. When the supplier invoice comes in, WAMWins matches PO, receipt and invoice before anyone is paid. A price difference is held for accounts payable.')}</div>
+  <section class="panel" id="sec-inbound" style="margin-top:16px"><div class="panel-head"><h2>Receiving</h2>${info('Three-way match', 'Receiving records what arrived against the purchase order. When the supplier invoice comes in, PO, receipt and invoice are matched before anyone is paid. A price difference is held for accounts payable.')}</div>
     <div class="table-wrap"><table><thead><tr><th>PO</th><th>Supplier</th><th>Lines</th><th>Expected</th><th>Status</th><th>Invoice match</th><th></th></tr></thead><tbody>
     ${WH.inbound.map((p, i) => `<tr><td><b>${p.po}</b></td><td>${p.supplier}</td><td class="small">${p.lines.map(l => `${l[1]} × ${whItem(l[0])?.name || l[0]}`).join('<br>')}</td><td class="small">${p.eta}</td>
       <td>${p.status === 'received' ? pill('ok', 'Received') : p.status === 'request' ? pill('info-p', 'Awaiting approval') : pill('warn', 'Due')}</td>
@@ -706,11 +1003,21 @@ VIEWS.warehouse = () => {
   V.querySelectorAll('[data-jump]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); el('sec-' + a.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
   V.querySelectorAll('[data-zone]').forEach(b => b.onclick = () => { WH.zone = b.dataset.zone; VIEWS.warehouse(); el('sec-stock').scrollIntoView({ block: 'start' }); });
   V.querySelectorAll('[data-release]').forEach(b => b.onclick = () => {
-    const v = VANS.find(x => x.id === b.dataset.release), lines = restockFor(v);
+    const v = VANS.find(x => x.id === b.dataset.release), lines = restockFor(v), tech = TECHS.find(t => t.id === v.tech).name;
+    const short = lines.filter(({ s, need }) => whItem(s.sku).qty < need);
+    confirmBox({ title: `Release restock to ${v.id}?`, ok: 'Release to van',
+      check: 'I picked and counted every line, and the totes are labeled for ' + v.id + '.',
+      html: `<p class="small">This moves stock out of the warehouse and onto ${v.id} (${tech}). It is recorded on release slip RS-${3311 + Object.keys(WH.released).length} and cannot be undone here; a wrong release needs a return.</p>
+        <div class="table-wrap" style="margin-top:10px"><table><thead><tr><th>Item</th><th class="num">Release</th><th class="num">In warehouse</th></tr></thead><tbody>
+        ${lines.map(({ s, need }) => { const w = whItem(s.sku); return `<tr><td>${s.name}</td><td class="num"><b>${Math.min(need, w.qty)}</b></td><td class="num">${w.qty}${w.qty < need ? ' ' + pill('bad', 'short') : ''}</td></tr>`; }).join('')}</tbody></table></div>
+        ${short.length ? `<p class="small" style="color:var(--red);margin-top:8px">${short.length} line${short.length > 1 ? 's are' : ' is'} short: only what is on the shelf will be released.</p>` : ''}`,
+      onOk: () => doRelease(v, lines) });
+  });
+  const doRelease = (v, lines) => {
     lines.forEach(({ s, need }) => { const w = whItem(s.sku), n = Math.min(need, w.qty); w.qty -= n; s.qty += n; w.idle = 0; });
     WH.released[v.id] = true; v.events.push({ t: hhmm(NOW_MIN), item: 'Restock from warehouse', rfid: lines.length + ' tags in', cam: 'Loading seen', pr: 'Release slip RS-' + (3310 + Object.keys(WH.released).length), res: 'ok' });
     toast(`${v.id} restock released: ${lines.length} lines. Van stock updated.`); renderNav(); VIEWS.warehouse();
-  });
+  };
   V.querySelectorAll('[data-receive]').forEach(b => b.onclick = () => {
     const p = WH.inbound[+b.dataset.receive];
     p.lines.forEach(([sku, n]) => { const w = whItem(sku); if (w) { w.qty += n; w.idle = 0; } });
@@ -823,7 +1130,7 @@ VIEWS.customers = () => {
     </tbody></table></div></section>
   <div class="grid g-side" id="sec-equip" style="margin-top:16px">
     <section class="panel"><div class="panel-head"><h2>Equipment at ${site.site} ${newTag}</h2>${info('Equipment records', 'One record per unit: model, serial, install date, refrigerant, warranty and every visit. Serials scanned at receiving create the record when the unit is installed, and Loxone devices sync in, so nobody types them twice. Technicians see this before they arrive.')}</div>
-      <div class="row" style="margin-bottom:12px">${EQUIP.map(s => `<button class="btn sm ${s.site === site.site ? 'blue' : ''}" type="button" data-eqsite="${s.site}">${s.site}</button>`).join('')}</div>
+      <div class="row" style="margin-bottom:12px">${EQUIP.map((s, i) => `<button class="btn sm ${s.site === site.site ? 'blue' : ''}" type="button" data-eqsite="${i}">Site ${i + 1}: ${s.site}</button>`).join('')}</div>
       <div class="list">${site.units.map(u => `<button class="item ${u.id === unit.id ? 'sel' : ''}" type="button" data-equnit="${u.id}"><div class="top"><b>${u.name}</b><span class="small muted">${u.id}</span></div><span class="small muted">Serial ${u.serial} · installed ${u.installed}</span></button>`).join('')}</div>
       ${site.loxone ? `<p class="small" style="margin-top:10px">${pill('info-p', 'Loxone site')} Live readings for this site are on <a href="#monitoring" style="color:var(--blue)">Monitoring</a>.</p>` : ''}</section>
     <section class="panel"><div class="panel-head"><h2>${unit.name}</h2></div>
@@ -837,11 +1144,11 @@ VIEWS.customers = () => {
   V.querySelectorAll('[data-markpaid]').forEach(b => b.onclick = () => { const f = FOLLOW.find(x => x.id === b.dataset.markpaid); f.status = 'paid'; toast(`${f.id} marked paid. Its reminders stopped.`); renderNav(); VIEWS.customers(); });
   V.querySelectorAll('[data-mkvisit]').forEach(b => b.onclick = () => {
     const a = AGREE.find(x => x.id === b.dataset.mkvisit); a.made = true; a.inQueue = true;
-    QUEUE.push({ id: 'Q-' + (560 + QUEUE.length + AGREE.filter(x => x.made).length), title: 'Maintenance visit · ' + a.plan.split(',')[0], customer: a.cust, skill: 'HVAC', part: 'Filter 16x25x1', mins: 60, pri: 'Normal' });
+    QUEUE.push({ id: nextQ(), title: 'Maintenance visit · ' + a.plan.split(',')[0], customer: a.cust, skill: 'HVAC', part: 'Filter 16x25x1', mins: 60, pri: 'Normal' });
     toast(`Visit for ${a.cust} (${a.next}) created from ${a.id} and added to the dispatch queue.`); renderNav(); VIEWS.customers();
   });
   V.querySelectorAll('[data-renew]').forEach(b => b.onclick = () => { const a = AGREE.find(x => x.id === b.dataset.renew); a.renewDue = false; a.renewSent = true; toast(`Renewal reminder for ${a.id} sent to ${a.cust} by email and SMS.`); VIEWS.customers(); });
-  V.querySelectorAll('[data-eqsite]').forEach(b => b.onclick = () => { STATE.eqSite = b.dataset.eqsite; STATE.eqUnit = EQUIP.find(s => s.site === STATE.eqSite).units[0].id; VIEWS.customers(); el('sec-equip').scrollIntoView({ block: 'start' }); });
+  V.querySelectorAll('[data-eqsite]').forEach(b => b.onclick = () => { STATE.eqSite = EQUIP[+b.dataset.eqsite].site; STATE.eqUnit = EQUIP.find(s => s.site === STATE.eqSite).units[0].id; VIEWS.customers(); el('sec-equip').scrollIntoView({ block: 'start' }); });
   V.querySelectorAll('[data-equnit]').forEach(b => b.onclick = () => { STATE.eqUnit = b.dataset.equnit; VIEWS.customers(); el('sec-equip').scrollIntoView({ block: 'start' }); });
 };
 
@@ -853,7 +1160,7 @@ VIEWS.estimates = () => {
   let portal;
   if (STATE.portal === 'approve') {
     portal = !EST.sent ? `<p class="small muted">Nothing to approve yet. Send ${EST.id} from the designer to see what the customer gets.</p>`
-      : EST.signed ? `<div class="formcard"><b>Approved and signed</b><span class="small">${P[EST.pick].name}: ${P[EST.pick].title} · ${fmt$(estTotal(EST.pick))}</span><span class="small">Signed by <span class="sig">${esc(EST.signed.name)}</span></span><span class="small muted">${EST.signed.at} · ${EST.signed.device} · estimate version ${EST.ver}</span></div><p class="small muted" style="margin-top:8px">Thank you. Cassidy Air will call to schedule the work.</p>`
+      : EST.signed ? `<div class="formcard"><b>Approved and signed</b><span class="small">${P[EST.pick].name}: ${P[EST.pick].title} · ${fmt$(estTotal(EST.pick))}</span><span class="small">Signed by ${sens('Customer', `<span class="sig">${esc(EST.signed.name)}</span>`)}</span><span class="small muted">${EST.signed.at} · ${EST.signed.device} · estimate version ${EST.ver}</span></div><p class="small muted" style="margin-top:8px">Thank you. Cassidy Air will call to schedule the work.</p>`
       : `<p class="small">Hi Ms. Gomez, here are your options for the water heater replacement.</p>
         <div class="list" style="margin:10px 0">${Object.keys(P).map(k => `<label class="item portal-opt ${EST.pick === k ? 'sel' : ''}"><span class="top"><span><input type="radio" name="popt" value="${k}" ${EST.pick === k ? 'checked' : ''}> <b>${P[k].name}</b></span><b>${fmt$(estTotal(k))}</b></span><span class="small muted">${P[k].title} · ${P[k].warr}</span></label>`).join('')}</div>
         <div class="field"><label for="signame">Type your full name to sign</label><input id="signame" type="text" autocomplete="name" placeholder="Full name"></div>
@@ -861,7 +1168,7 @@ VIEWS.estimates = () => {
         <button class="btn primary" type="button" id="sign" style="width:100%">Approve and sign</button>`;
   } else if (STATE.portal === 'pay') {
     portal = inv.status === 'paid' ? `<div class="formcard"><b>Paid: ${inv.id}</b><span class="small">${fmt$(inv.amt)} · receipt sent by email</span><span class="small muted">Reminders for this invoice stopped.</span></div>`
-      : STATE.payStep ? `<div class="formcard" style="border-style:solid"><b>Secure payment page</b><span class="small muted">Hosted by the payment processor. Card details are entered here and never reach WAMWins; WAMWins keeps only the processor's reference and the result.</span><span class="small">Demo: no card is entered.</span><button class="btn primary" type="button" id="paydone">Complete demo payment of ${fmt$(inv.amt)}</button></div>`
+      : STATE.payStep ? `<div class="formcard" style="border-style:solid"><b>Secure payment page</b><span class="small muted">Hosted by the payment processor. Card details are entered here and never reach this app; it keeps only the processor's reference and the result.</span><span class="small">Demo: no card is entered.</span><button class="btn primary" type="button" id="paydone">Complete demo payment of ${fmt$(inv.amt)}</button></div>`
       : `<p class="small">Invoice ${inv.id} · ${inv.what}</p><dl class="kv" style="margin:10px 0"><dt>Amount due</dt><dd><b>${fmt$(inv.amt)}</b></dd><dt>Sent</dt><dd>${inv.days} days ago</dd></dl><button class="btn primary" type="button" id="pay" style="width:100%">Pay ${fmt$(inv.amt)}</button>`;
   } else {
     portal = STATE.booked ? `<div class="formcard"><b>Request received</b><span class="small">${esc(STATE.booked)}</span><span class="small muted">You will get a text when a technician is assigned.</span></div>`
@@ -898,7 +1205,7 @@ VIEWS.estimates = () => {
     if (!name || !el('sigok').checked) { toast('Type your name and tick the box to approve.'); return; }
     EST.signed = { name, at: fmtDay(0) + ' · ' + hhmm(NOW_MIN), device: 'iPhone · Safari' };
     const f = FOLLOW.find(x => x.id === EST.id); f.status = 'approved'; f.amt = estTotal(EST.pick);
-    QUEUE.push({ id: 'Q-' + (570 + QUEUE.length), title: 'Water heater replacement (' + PRICEBOOK[EST.pick].name.toLowerCase() + ')', customer: 'Gomez residence, West Palm Beach', skill: 'Plumbing', part: PRICEBOOK[EST.pick].lines[0][0], mins: 240, pri: 'Normal' });
+    QUEUE.push({ id: nextQ(), title: 'Water heater replacement (' + PRICEBOOK[EST.pick].name.toLowerCase() + ')', customer: 'Gomez residence, West Palm Beach', skill: 'Plumbing', part: PRICEBOOK[EST.pick].lines[0][0], mins: 240, pri: 'Normal' });
     toast(`${EST.id} approved and signed. Job created and added to the dispatch queue; reminders stopped.`); renderNav(); VIEWS.estimates();
   });
   V.querySelector('#pay')?.addEventListener('click', () => { STATE.payStep = true; VIEWS.estimates(); });
@@ -906,16 +1213,161 @@ VIEWS.estimates = () => {
   V.querySelector('#book')?.addEventListener('click', () => {
     const what = el('bk-what').value, when = el('bk-when').value, note = el('bk-note').value.trim();
     STATE.booked = `${what} · ${when}${note ? ' · ' + note : ''}`;
-    QUEUE.push({ id: 'Q-' + (580 + QUEUE.length), title: what + ' (portal booking)', customer: 'Reyes residence, Lake Worth', skill: /water|leak/i.test(what) ? 'Plumbing' : 'HVAC', part: '—', mins: 60, pri: when.startsWith('Today') ? 'High' : 'Normal' });
+    QUEUE.push({ id: nextQ(), title: what + ' (portal booking)', customer: 'Reyes residence, Lake Worth', skill: /water|leak/i.test(what) ? 'Plumbing' : 'HVAC', part: '—', mins: 60, pri: when.startsWith('Today') ? 'High' : 'Normal' });
     toast('Portal booking received: Service Request created and added to the dispatch queue.'); renderNav(); VIEWS.estimates();
   });
 };
+
+// ============================================================ job media: photos, videos, voice notes (shared)
+// Technicians capture on the phone and upload to the job; management sees every upload, live.
+// Storage: each file goes to the artifact's shared file store; a record per uploader holds the pointers.
+//   media/<uploader>     the files' pointers and notes: management (Editors, owner) reads all, each technician only their own
+//   medialog/<uploader>  what was added, to which job and when, without the files: readable by everyone on the artifact
+// Without the hosted runtime (the installed app, local tests) uploads stay in this tab only.
+const MEDIA_MAX = 20 * 1024 * 1024;
+const sampleArt = (kind, cap) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#E8EEF7"/><rect x="18" y="18" width="284" height="144" rx="10" fill="none" stroke="#9AA8C4" stroke-dasharray="6 6"/>${kind === 'video' ? '<circle cx="160" cy="78" r="26" fill="#0B49D1"/><path d="M152 64l22 14-22 14z" fill="#fff"/>' : '<rect x="128" y="56" width="64" height="44" rx="6" fill="#0B49D1"/><circle cx="160" cy="78" r="12" fill="#fff"/>'}<text x="160" y="132" text-anchor="middle" font-family="Arial" font-size="13" fill="#4A5878">${cap}</text></svg>`);
+const SAMPLES = [
+  { id: 'S-304', kind: 'photo', job: 'J-24127', by: 'Lena Ortiz', t: '9:35 AM', size: '2.4 MB', note: 'Manifold 7 fitting before repair', sample: true },
+  { id: 'S-303', kind: 'voice', job: 'J-24122', by: 'Sam Whitaker', t: '10:05 AM', size: '0:31', note: 'Compressor hums, no start after new capacitor', sample: true },
+  { id: 'S-302', kind: 'video', job: 'J-24120', by: 'Kayla Brooks', t: '9:40 AM', size: '0:42 · 18 MB', note: 'Old unit removed; line set route to the new pad', sample: true },
+  { id: 'S-301', kind: 'photo', job: 'J-24117', by: 'Marco Diaz', t: '8:52 AM', size: '2.1 MB', note: 'Failed condenser fan motor nameplate', sample: true },
+];
+const LOCAL = [];                       // uploads kept in this tab only (no shared storage here)
+const CLOUD = { full: {}, log: {}, names: {}, state: 'off', busy: 0, mineFull: null, mineLog: null };
+STATE.mediaJob = 'J-24117'; STATE.mediaKind = 'all'; STATE.rec = null; STATE.mediaNote = '';
+const KIND_NAME = { photo: 'Photo', video: 'Video', voice: 'Voice note' };
+const fmtSize = b => b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+const whenOf = iso => { const d = new Date(iso), same = d.toDateString() === new Date().toDateString(); return (same ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ') + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); };
+// stored types: the file store takes images and mp4/webm; voice recordings use the same containers
+function storeType(file, kind) {
+  const t = (file.type || '').toLowerCase(), ext = (file.name.split('.').pop() || '').toLowerCase();
+  if (['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(t)) return ['photo', t];
+  if (t === 'video/mp4' || t === 'video/webm') return [kind === 'voice' ? 'voice' : 'video', t];
+  if (t === 'video/quicktime' || ext === 'mov') return ['video', 'video/mp4'];
+  if (t.startsWith('audio/webm') || ext === 'webm' && kind === 'voice') return ['voice', 'video/webm'];
+  if (['audio/mp4', 'audio/x-m4a', 'audio/m4a', 'audio/aac'].includes(t) || ext === 'm4a') return ['voice', 'video/mp4'];
+  if (t.startsWith('image/')) return [null, 'This photo format (' + (ext || t) + ') is not supported. Set the camera to JPEG ("Most compatible") or send a screenshot.'];
+  if (t.startsWith('audio/')) return [null, 'Record the voice note in the app, or as an .m4a file; ' + (ext || t) + ' is not supported.'];
+  return [null, `${file.name} is not a photo, video or voice note.`];
+}
+let mediaRefresh = 0;
+const refreshMedia = () => { if (STATE.route !== 'field' || mediaRefresh) return; mediaRefresh = requestAnimationFrame(() => { mediaRefresh = 0; const y = scrollY; VIEWS.field(); scrollTo(0, y); }); };
+async function initCloud() {
+  if (!window.claude?.use) return;
+  CLOUD.state = 'connecting';
+  const [db, assets, user] = await Promise.all(['db', 'assets', 'user'].map(n => claude.use(n).catch(() => null)));
+  Object.assign(CL, { db, assets, user });
+  if (user) { CL.admin = await user.canEdit(); CL.uid = await user.id(); }
+  setMode(CL.admin ? (lsGet('wam-view') || 'it') : assets ? 'technician' : 'it');
+  if (!db) { CLOUD.state = 'off'; refreshMedia(); return; }
+  const timer = setTimeout(() => { if (CLOUD.state === 'connecting') { CLOUD.state = 'slow'; refreshMedia(); } }, 10000);
+  const sub = (coll, key) => db.collection(coll).onSnapshot(qs => {
+    const out = {}; qs.docs.forEach(d => { const items = d.data()?.items || {}; Object.entries(items).forEach(([iid, it]) => { out[iid] = { ...it, iid, uid: d.id }; }); if (d.id === CL.uid) CLOUD[key === 'full' ? 'mineFull' : 'mineLog'] = items; });
+    CLOUD[key] = out; if (!qs.metadata.fromCache) { clearTimeout(timer); CLOUD.state = 'live'; }
+    resolveNames(); refreshMedia();
+  }, () => { clearTimeout(timer); CLOUD.state = CLOUD.state === 'live' ? 'live' : 'error'; refreshMedia(); });
+  if (CL.admin || assets) sub('media', 'full');
+  sub('medialog', 'log');
+}
+async function resolveNames() {
+  if (!CL.user) return;
+  const ids = [...new Set([...Object.values(CLOUD.full), ...Object.values(CLOUD.log)].map(m => m.uid))];
+  if (!ids.length) return;
+  const ps = await CL.user.profiles(ids); let changed = false;
+  ids.forEach(id => { const n = ps[id]?.name || ''; if (CLOUD.names[id] !== n) { CLOUD.names[id] = n; changed = true; } });
+  if (changed) refreshMedia();
+}
+async function addMedia(file, kind) {
+  if (!file) return false;
+  const [k, typeOrMsg] = storeType(file, kind);
+  if (!k) { toast(typeOrMsg); return false; }
+  if (file.size > MEDIA_MAX) { toast(`${file.name} is ${fmtSize(file.size)}; the limit is 20 MB per file. Record a shorter video (about 30 seconds).`); return false; }
+  const note = (STATE.mediaNote || '').trim() || file.name, job = STATE.mediaJob, iid = 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t = new Date().toISOString();
+  if (!CL.assets || !CL.db || !CL.uid) {   // no shared storage in this view: keep it in this tab
+    LOCAL.unshift({ id: iid, kind: k, job, by: 'You', t: whenOf(t), size: fmtSize(file.size), note, url: URL.createObjectURL(file), local: true });
+    return true;
+  }
+  CLOUD.busy++; refreshMedia();
+  try {
+    const up = await CL.assets.upload(file, { type: typeOrMsg });
+    const item = { kind: k, job, note, t, size: fmtSize(up.sizeBytes), asset: up.id, type: up.contentType };
+    const full = CL.db.doc('media/' + CL.uid), log = CL.db.doc('medialog/' + CL.uid);
+    const curF = CLOUD.mineFull || (await full.get()).data()?.items || {}, curL = CLOUD.mineLog || (await log.get()).data()?.items || {};
+    await full.set({ items: { ...curF, [iid]: item } });
+    await log.set({ items: { ...curL, [iid]: { kind: k, job, t, size: item.size } } });
+    return true;
+  } catch (e) {
+    const c = e?.code;
+    toast(c === 'too_large' ? 'That file is over 20 MB. Record a shorter video.' : c === 'unsupported_type' ? 'That file type cannot be stored. Use JPEG photos, MP4 or WebM video, or record the voice note in the app.' : c === 'quota_or_state' ? 'Shared storage is full. Ask a manager to remove old files.' : c === 'rate_limited' ? 'Too many uploads at once. Wait a moment and try again.' : 'The upload did not finish. Check the connection and try again.');
+    return false;
+  } finally { CLOUD.busy--; refreshMedia(); }
+}
+function mediaItems() {
+  const out = [], seen = new Set();
+  Object.values(CLOUD.full).forEach(m => { seen.add(m.iid); out.push({ id: m.iid, kind: m.kind, job: m.job, note: m.note, by: m.uid === CL.uid ? 'You' : CLOUD.names[m.uid] || 'A technician', t: whenOf(m.t), ts: m.t, size: m.size, url: '/_blob/' + m.asset, mine: m.uid === CL.uid, shared: true }); });
+  Object.values(CLOUD.log).forEach(m => { if (!seen.has(m.iid)) out.push({ id: m.iid, kind: m.kind, job: m.job, note: '', by: m.uid === CL.uid ? 'You' : CLOUD.names[m.uid] || 'A technician', t: whenOf(m.t), ts: m.t, size: m.size, url: null, shared: true, hidden: true }); });
+  out.sort((a, b) => (b.ts || '').localeCompare(a.ts || ''));
+  return [...LOCAL, ...out, ...SAMPLES];
+}
+function mediaSection() {
+  const all = mediaItems(), list = all.filter(m => STATE.mediaKind === 'all' || m.kind === STATE.mediaKind);
+  const shared = !!(CL.assets && CL.db && CL.uid), canUpload = shared || !window.claude?.use || CLOUD.state === 'off' && !CL.db;
+  const lockedPrev = `<div class="locked-block"><span class="lockbar">Visible to authorized personnel only</span><button class="info sm" type="button" aria-label="Viewing by permission: media hidden" data-info-title="Viewing by permission" data-info-body="Job photos, videos and voice notes show customers' homes, equipment and sometimes people. Only management and other authorized personnel can open them; a technician can open their own. You are viewing as ${VIEWER.label}.">i</button></div>`;
+  const visible = m => m.local || m.sample ? !VIEWER.restricted || m.local : m.hidden ? false : !VIEWER.restricted || (m.mine && VIEWER.mode === 'technician');
+  const prev = m => !visible(m) ? lockedPrev
+    : m.kind === 'voice' ? (m.url ? `<audio controls preload="metadata" src="${m.url}"></audio>` : `<div class="wave" aria-label="Sample voice note, no audio in the demo">${Array.from({ length: 36 }, (_, i) => `<i style="height:${8 + Math.round(Math.abs(Math.sin(i * 1.7)) * 26)}px"></i>`).join('')}</div><span class="small muted">Sample: no audio in the demo</span>`)
+    : m.kind === 'video' ? (m.url ? `<video controls preload="metadata" playsinline src="${m.url}"></video>` : `<img src="${sampleArt('video', 'Sample video')}" alt="Sample video placeholder">`)
+    : (m.url ? `<img src="${m.url}" alt="${esc(m.note || 'Job photo')}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'small muted',textContent:'File not available in this view'}))">` : `<img src="${sampleArt('photo', 'Sample photo')}" alt="Sample photo placeholder">`);
+  const status = shared ? (CLOUD.state === 'live' ? pill('ok', 'Shared: live') : CLOUD.state === 'slow' ? pill('warn', 'Shared storage not reachable yet') : CLOUD.state === 'error' ? pill('bad', 'Shared storage stopped; reload to reconnect') : pill('plain', 'Connecting…'))
+    : window.claude?.use && CL.db ? pill('plain', 'View only') : pill('warn', 'Not shared in this copy');
+  return `<section class="panel" id="sec-media" style="margin-top:16px"><div class="panel-head"><h2>Photos, videos and voice notes ${newTag}</h2>${status}${info('Job media', 'Technicians take photos, record videos and voice notes on their phone and attach them to the job. Every upload goes to shared storage and appears here for management straight away, on any device. Files stay in the job record, not on personal phones or chat apps. Only authorized personnel can open them; everyone else sees that a file exists, who added it and when.')}</div>
+    <div class="grid g-side">
+      <div class="capture"><h3>Capture on the job</h3>
+        ${canUpload ? `<div class="inputs" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="field"><label for="m-job">Job</label><select id="m-job">${JOBS.map(j => `<option value="${j.id}" ${j.id === STATE.mediaJob ? 'selected' : ''}>${j.id} · ${j.title}</option>`).join('')}</select></div>
+          <div class="field"><label for="m-note">Note (optional)</label><input id="m-note" type="text" placeholder="What does this show?" value="${esc(STATE.mediaNote)}"></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label class="btn primary">Take photo<input class="sr" id="m-photo" type="file" accept="image/*" capture="environment"></label>
+          <label class="btn">Record video<input class="sr" id="m-video" type="file" accept="video/*" capture="environment"></label>
+          <button class="btn ${STATE.rec ? 'danger' : ''}" type="button" id="m-voice">${STATE.rec ? 'Stop and save voice note' : 'Record voice note'}</button><input class="sr" id="m-audio" type="file" accept="audio/*,.m4a,.webm" capture aria-label="Choose a recorded voice note" tabindex="-1">
+          <label class="btn">Upload files<input class="sr" id="m-files" type="file" accept="image/*,video/*,audio/*,.m4a" multiple></label>
+        </div>
+        <p class="small muted" style="margin-top:8px">${CLOUD.busy ? `<span style="color:var(--blue)">Uploading ${CLOUD.busy} file${CLOUD.busy > 1 ? 's' : ''}…</span> ` : ''}${STATE.rec ? '<span style="color:var(--red)">● Recording…</span> ' : ''}JPEG or PNG photos, MP4 or WebM videos and voice notes, up to 20 MB each (about 30 seconds of phone video). On a phone, Take photo and Record video open the camera.</p>`
+        : `<p class="small">Uploading is for technicians and management. You can see what was added, to which job and when.</p>`}</div>
+      <div class="capture"><h3>Who can see these</h3><p class="small">Every upload is shared with management at once, on any device. Management and other authorized personnel open the files here; the technician who added a file can open their own. Everyone else sees only the list.</p>
+        <p class="small" style="margin-top:6px">${!VIEWER.restricted ? pill('ok', 'You: ' + VIEWER.label + ', files visible') : VIEWER.mode === 'technician' ? pill('info-p', 'You: technician, your own files visible') : pill('warn', 'You: ' + VIEWER.label + ', files hidden')}</p></div>
+    </div>
+    <div class="row" style="margin:14px 0 10px">${[['all', 'All'], ['photo', 'Photos'], ['video', 'Videos'], ['voice', 'Voice notes']].map(([k, l]) => `<button class="btn sm ${STATE.mediaKind === k ? 'blue' : ''}" type="button" data-mkind="${k}" aria-pressed="${STATE.mediaKind === k}">${l} · ${k === 'all' ? all.length : all.filter(m => m.kind === k).length}</button>`).join('')}</div>
+    <div class="media-grid">${list.map(m => `<div class="media" data-media="${m.id}"><div class="media-prev">${prev(m)}</div>
+      <div class="top"><b>${KIND_NAME[m.kind]} · ${m.job}</b>${m.shared ? pill('info-p', 'Shared') : m.local ? pill('warn', 'This tab only') : ''}</div>
+      ${visible(m) && m.note ? `<span class="small">${esc(m.note)}</span>` : ''}<span class="small muted">${esc(m.by)} · ${m.t} · ${m.size}${m.sample ? ' · sample' : ''}</span></div>`).join('') || '<p class="muted">Nothing of this kind yet.</p>'}</div></section>`;
+}
+function wireMedia(V) {
+  const rerender = () => { const y = scrollY; VIEWS.field(); scrollTo(0, y); };
+  V.querySelector('#m-job')?.addEventListener('change', e => { STATE.mediaJob = e.target.value; });
+  V.querySelector('#m-note')?.addEventListener('input', e => { STATE.mediaNote = e.target.value; });
+  const done = n => { if (!n) return; STATE.mediaNote = ''; toast(`${n > 1 ? n + ' files' : 'File'} added to ${STATE.mediaJob}. ${CL.assets ? 'Shared with management.' : 'This copy keeps it in this tab only.'}`); rerender(); };
+  const take = (inp, kind) => { if (inp) inp.onchange = async () => { const fs = [...inp.files]; inp.value = ''; let n = 0; for (const f of fs) if (await addMedia(f, kind)) n++; done(n); }; };
+  take(V.querySelector('#m-photo'), null); take(V.querySelector('#m-video'), null); take(V.querySelector('#m-audio'), 'voice'); take(V.querySelector('#m-files'), null);
+  V.querySelectorAll('[data-mkind]').forEach(b => b.onclick = () => { STATE.mediaKind = b.dataset.mkind; rerender(); });
+  const vb = V.querySelector('#m-voice'); if (vb) vb.onclick = async () => {
+    if (STATE.rec) { STATE.rec.stop(); return; }
+    try {
+      if (!window.MediaRecorder || !navigator.mediaDevices?.getUserMedia) throw new Error('no recorder');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true }), mime = ['audio/webm', 'audio/mp4'].find(m => MediaRecorder.isTypeSupported?.(m)) || '', rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined), parts = [];
+      rec.ondataavailable = e => parts.push(e.data);
+      rec.onstop = async () => { stream.getTracks().forEach(t => t.stop()); STATE.rec = null; const type = (rec.mimeType || 'audio/webm').split(';')[0], blob = new Blob(parts, { type }); done(await addMedia(new File([blob], 'voice-note.' + (type.includes('mp4') ? 'm4a' : 'webm'), { type }), 'voice') ? 1 : 0); rerender(); };
+      rec.start(); STATE.rec = rec; rerender();
+    } catch (e) { V.querySelector('#m-audio').click(); }   // no microphone access here: use the phone's recorder app instead
+  };
+}
 
 VIEWS.field = () => {
   const run = RUNS.find(r => r.id === 'J-24117'), mins = TIME.reduce((s, t) => s + (t.e - t.s), 0) + (STATE.clockIn ? 30 : 0);
   const call = CALLS.find(c => c.id === STATE.call);
   view(`
-  <h1>Field & AI</h1><p class="lead">What technicians capture on the job, the paperwork WAMWins drafts from their notes, and the calls answered for the office. AI drafts and AI phone answering are later-tier capabilities, shown here as a preview.</p>
+  <h1>Field activities</h1><p class="lead">What technicians do and capture on the job: time, receipts, photos, videos and voice notes; the paperwork drafted from their notes; and the calls answered for the office. AI drafts and AI phone answering are later-tier capabilities, shown here as a preview.</p>
   <div class="grid g2" style="margin-top:16px">
     <section class="panel"><div class="panel-head"><h2>Time on J-24117 ${newTag}</h2>${info('Time tracking', 'Technicians clock time against the job. Real hours replace estimated hours in job costing, so the same-job comparison uses actual numbers.')}</div>
       <p class="small muted" style="margin-bottom:8px">Marco Diaz · ${run.title} · estimate ${run.hours} h</p>
@@ -928,7 +1380,8 @@ VIEWS.field = () => {
         ${r.status === 'check' ? `<div class="row"><button class="btn sm primary" type="button" data-file="${r.id}">File to ${r.job}</button></div>` : ''}</div>`).join('')}</div>
       ${RECEIPTS.some(r => r.id === 'RC-202') ? '' : `<button class="btn" type="button" id="snap" style="margin-top:10px">Add receipt photo (sample)</button>`}</section>
   </div>
-  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Drafts for review ${newTag}</h2>${pill('info-p', 'Later tier')}${info('Drafts for review', 'WAMWins drafts the completion report, invoice and customer message from the technician\'s short notes. Nothing is sent or posted until a person approves it, and the person can edit the draft first.')}</div>
+  ${mediaSection()}
+  <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Drafts for review ${newTag}</h2>${pill('info-p', 'Later tier')}${info('Drafts for review', 'The completion report, invoice and customer message are drafted from the technician\'s short notes. Nothing is sent or posted until a person approves it, and the person can edit the draft first.')}</div>
     <div class="grid g3">${DRAFTS.map(d => `<div class="item draft"><div class="top"><b>${d.kind}</b>${d.status === 'review' ? pill('warn', 'Needs approval') : d.status === 'sent' ? pill('ok', 'Approved and sent') : pill('plain', 'Discarded')}</div>
       <span class="small muted">${d.job}</span><span class="small"><b>Technician notes:</b> ${esc(d.notes)}</span>
       ${d.status === 'review' ? `<label class="small muted" for="dt-${d.id}">AI draft (you can edit)</label><textarea id="dt-${d.id}" rows="5">${esc(d.text)}</textarea>
@@ -938,11 +1391,12 @@ VIEWS.field = () => {
       <div class="list">${CALLS.map(c => `<button class="item ${c.id === call.id ? 'sel' : ''}" type="button" data-call="${c.id}"><div class="top"><b>${c.who}</b>${c.status === 'review' ? pill('warn', 'Needs a person') : pill('ok', c.out)}</div><span class="small muted">${c.t} · ${c.dur} · ${c.summary}</span></button>`).join('')}</div></section>
     <section class="panel"><div class="panel-head"><h2>${call.id} · ${call.t}</h2><span class="sub">${call.dur}</span></div>
       <p class="small" style="margin-bottom:8px"><b>Summary:</b> ${call.summary}</p>
-      <div class="transcript">${call.tr.map(([w, t], i) => `<p class="small"><b>${w === 'AI' ? 'WAMWins' : 'Caller'}:</b> ${t}${i === 0 ? ` <span class="pill plain">Recording notice</span>` : ''}</p>`).join('')}</div>
+      <div class="transcript">${call.tr.map(([w, t], i) => `<p class="small"><b>${w === 'AI' ? 'Assistant' : 'Caller'}:</b> ${t}${i === 0 ? ` <span class="pill plain">Recording notice</span>` : ''}</p>`).join('')}</div>
       <div class="row" style="margin-top:10px">${call.status === 'review' ? `<button class="btn primary" type="button" id="mkreq">Create service request</button><button class="btn" type="button" id="cbk">Log callback done</button>` : `<span class="small">${pill('ok', call.out)}</span>`}</div>
       <p class="src" style="margin-top:8px">Recordings and transcripts follow the consent and retention rules in the requirements.</p></section>
   </div>`);
   const V = el('view');
+  wireMedia(V);
   V.querySelector("#tclock").onclick = () => {
     if (STATE.clockIn) { TIME.push({ job: 'J-24117', what: 'Install new motor', s: STATE.clockIn, e: STATE.clockIn + 30 }); STATE.clockIn = null; toast('Clocked out: 0.50 h added to J-24117. Job costing now uses actual hours.'); }
     else { STATE.clockIn = NOW_MIN; toast('Clocked in on J-24117 at ' + hhmm(NOW_MIN) + '.'); }
@@ -959,14 +1413,15 @@ VIEWS.field = () => {
   V.querySelectorAll('[data-discard]').forEach(b => b.onclick = () => { const d = DRAFTS.find(x => x.id === b.dataset.discard); d.status = 'discarded'; toast(`${d.kind} draft discarded. Nothing was sent.`); renderNav(); VIEWS.field(); });
   V.querySelectorAll('[data-call]').forEach(b => b.onclick = () => { STATE.call = b.dataset.call; VIEWS.field(); });
   V.querySelector('#mkreq')?.addEventListener('click', () => {
-    call.status = 'done'; call.out = 'Created Q-' + (590 + QUEUE.length);
-    QUEUE.push({ id: 'Q-' + (590 + QUEUE.length), title: 'No hot water; replacement price', customer: 'Patel residence, Jupiter', skill: 'Plumbing', part: '—', mins: 60, pri: 'High' });
+    call.status = 'done'; const qid = nextQ(); call.out = 'Created ' + qid;
+    QUEUE.push({ id: qid, title: 'No hot water; replacement price', customer: 'Patel residence, Jupiter', skill: 'Plumbing', part: '—', mins: 60, pri: 'High' });
     toast('Service request created from the call and added to the dispatch queue.'); renderNav(); VIEWS.field();
   });
   V.querySelector('#cbk')?.addEventListener('click', () => { call.status = 'done'; call.out = 'Callback done by office'; toast('Callback logged.'); renderNav(); VIEWS.field(); });
 };
 
 addEventListener('hashchange', go); go();
+initCloud().then(() => { if (CL.user) VIEWS[STATE.route](); }).catch(() => { });
 })();
 </script>
 
@@ -979,12 +1434,12 @@ addEventListener('hashchange', go); go();
   const say = msg => { const box = document.getElementById('toasts'), t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; box.append(t); setTimeout(() => t.remove(), 5000); return t; };
   if (!standalone) btn.hidden = false;
   addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
-  addEventListener('appinstalled', () => { deferred = null; btn.hidden = true; say('WAMWins Trades is installed.'); });
+  addEventListener('appinstalled', () => { deferred = null; btn.hidden = true; say('Trades Demo is installed.'); });
   btn.addEventListener('click', async () => {
     if (deferred) { deferred.prompt(); const r = await deferred.userChoice; if (r.outcome === 'accepted') btn.hidden = true; deferred = null; return; }
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const back = document.createElement('div'); back.className = 'modal-back';
-    back.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="it"><h2 id="it">Install WAMWins Trades</h2>' +
+    back.innerHTML = '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="it"><h2 id="it">Install Trades Demo</h2>' +
       (ios ? '<p class="lead">In Safari, tap the Share button, then <b>Add to Home Screen</b>.</p>'
            : '<p class="lead">Your browser did not offer an install prompt here. Use its menu instead:</p><ul class="lead" style="margin:0;padding-left:18px"><li><b>Android, Chrome:</b> menu (three dots) then <b>Install app</b> or <b>Add to Home screen</b>.</li><li><b>Computer, Chrome or Edge:</b> the install icon at the right of the address bar.</li><li><b>iPhone or iPad:</b> open this page in Safari, Share, then <b>Add to Home Screen</b>.</li></ul>') +
       '<div class="row" style="justify-content:flex-end"><button class="btn primary" type="button">Got it</button></div></div>';

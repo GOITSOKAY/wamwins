@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "WAMWins Trades Demo",
-  "short_name": "WAMWins Trades",
+  "name": "Trades Demo",
+  "short_name": "Trades Demo",
   "description": "Demo with sample data: ICT Library workflow, dispatch, van inventory, Loxone monitoring and the cost comparison with ServiceTitan.",
   "start_url": "./",
   "scope": "./",

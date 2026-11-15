@@ -1,11 +1,11 @@
-# WAMWins Trades Demo (PWA)
+# Trades Demo (PWA)
 
 Clickable demo with sample data for the Cassidy proposal: central dashboard, ICT Library workflow, dispatch,
 van inventory, Loxone monitoring with brazing supervision, and the cost comparison with ServiceTitan.
 
 ## Put it online (GitHub Pages)
 1. Upload everything in this folder (including the hidden `.nojekyll` file) to a GitHub repository, or to a
-   `trades-demo/` folder inside the existing WAMWins site repository.
+   `trades-demo/` folder inside an existing site repository.
 2. Settings > Pages: deploy from the branch. The demo opens at `https://<your-domain>/` or `/trades-demo/`.
 3. Open it once while online; after that it works offline and can be installed with the **Install app** button.
 

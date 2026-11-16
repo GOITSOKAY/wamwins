@@ -204,6 +204,21 @@ label.btn { cursor: pointer } label.btn:focus-within { outline: 3px solid var(--
 .media-prev audio { width: 92% } .media-prev .locked-block { width: 100%; height: 100%; border: 0; justify-content: center; border-radius: 0 }
 .media-prev:has(.wave) { display: flex; flex-direction: column; justify-content: center; gap: 6px }
 .wave { display: flex; align-items: center; gap: 2px; height: 40px } .wave i { width: 3px; background: var(--blue); border-radius: 2px; opacity: .75 }
+/* grades: technicians L1-L3, apprentice, helpers H1-H3 */
+.lvl.g-l1 { background: var(--surface-2); color: var(--ink-2) } .lvl.g-l2 { background: var(--blue-soft); color: var(--blue) } .lvl.g-l3 { background: var(--yellow); color: #0E1B3D }
+.lvl.g-ap { background: var(--ok-soft); color: var(--ok) }
+.lvl.g-h1, .lvl.g-h2, .lvl.g-h3 { background: transparent; color: var(--ink-2); box-shadow: inset 0 0 0 1px var(--ink-3) }
+.lvl + .plus { font-size: 11px; font-weight: 700; color: var(--ink-3); margin-left: 1px }
+.grades { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+.grade-col { display: grid; gap: 8px; align-content: start; background: var(--surface-2); border-radius: var(--r-s); padding: 10px }
+.grade-head { display: flex; flex-direction: column; gap: 0 }
+/* warehouse hold zones */
+.holds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+.hold { border: 1px solid var(--line); border-top-width: 4px; border-radius: var(--r-s); padding: 12px; display: grid; gap: 8px; align-content: start; min-width: 0 }
+.hold-rtn { border-top-color: var(--warn) } .hold-dmg { border-top-color: var(--red) } .hold-rpr { border-top-color: var(--ok) }
+.hold-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap }
+.hold-bar i { background: var(--ink-3) }
+@media (max-width: 1080px) { .grades, .holds { grid-template-columns: minmax(0, 1fr) } }
 /* customer and field tools */
 .newtag { font-size: 10.5px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; background: var(--yellow); color: #0E1B3D; border-radius: 999px; padding: 1px 8px; vertical-align: 2px; margin-left: 4px }
 .item.opt { cursor: pointer }
@@ -264,19 +279,21 @@ const hhmm = m => { const h = Math.floor(m / 60), mm = m % 60, ap = h >= 12 ? 'P
 const el = id => document.getElementById(id);
 
 const TECHS = [
-  // level: 1 = apprentice / helper, 2 = journeyman service tech, 3 = senior / master tech (commercial, controls, crew lead)
-  { id: 't1', name: 'Marco Diaz', skills: ['HVAC', 'Brazing'], van: 'V-101', zone: 'Riviera Beach', level: 3 },
-  { id: 't2', name: 'Kayla Brooks', skills: ['HVAC'], van: 'V-102', zone: 'West Palm Beach', level: 2 },
-  { id: 't3', name: 'Andre Pierce', skills: ['Plumbing'], van: 'V-103', zone: 'Palm Beach Gardens', level: 2 },
-  { id: 't4', name: 'Lena Ortiz', skills: ['Plumbing', 'Leak detection'], van: 'V-104', zone: 'Jupiter', level: 3 },
-  { id: 't5', name: 'Sam Whitaker', skills: ['Electrical', 'HVAC'], van: 'V-105', zone: 'Lake Worth', level: 2 },
-  { id: 't6', name: 'Priya Nair', skills: ['Electronics', 'HVAC'], van: 'V-106', zone: 'Boca Raton', level: 1 },
-  { id: 't7', name: 'Jordan Lee', skills: ['HVAC'], van: null, zone: 'West Palm Beach', level: 1, note: 'Apprentice, rides with a lead' },
-  { id: 't8', name: 'Chris Vega', skills: ['Plumbing'], van: null, zone: 'Palm Beach Gardens', level: 1, note: 'Apprentice, rides with a lead' },
-  { id: 't9', name: 'Ray Thompson', skills: ['Electrical'], van: null, zone: 'Lake Worth', level: 3, note: 'Master electrician, shop truck' },
+  // grade: L1-L3 technicians; AP apprentice (studying while working, always with an L2/L3); H1-H3 helpers
+  { id: 't1', name: 'Marco Diaz', skills: ['HVAC', 'Brazing'], van: 'V-101', zone: 'Riviera Beach', grade: 'L3' },
+  { id: 't2', name: 'Kayla Brooks', skills: ['HVAC'], van: 'V-102', zone: 'West Palm Beach', grade: 'L2' },
+  { id: 't3', name: 'Andre Pierce', skills: ['Plumbing'], van: 'V-103', zone: 'Palm Beach Gardens', grade: 'L2' },
+  { id: 't4', name: 'Lena Ortiz', skills: ['Plumbing', 'Leak detection'], van: 'V-104', zone: 'Jupiter', grade: 'L3' },
+  { id: 't5', name: 'Sam Whitaker', skills: ['Electrical', 'HVAC'], van: 'V-105', zone: 'Lake Worth', grade: 'L2' },
+  { id: 't6', name: 'Priya Nair', skills: ['Electronics', 'HVAC'], van: 'V-106', zone: 'Boca Raton', grade: 'L1' },
+  { id: 't7', name: 'Jordan Lee', skills: ['HVAC'], van: null, zone: 'West Palm Beach', grade: 'AP', note: 'Apprentice, year 2 of 4 · rides with a lead' },
+  { id: 't8', name: 'Chris Vega', skills: ['Plumbing'], van: null, zone: 'Palm Beach Gardens', grade: 'H2', note: 'Helper 2 · rides with a lead' },
+  { id: 't9', name: 'Ray Thompson', skills: ['Electrical'], van: null, zone: 'Lake Worth', grade: 'L3', note: 'Master electrician, shop truck' },
+  { id: 't10', name: 'Ben Carter', skills: ['HVAC'], van: null, zone: 'Riviera Beach', grade: 'H1', note: 'Helper 1 · rides with a lead' },
+  { id: 't11', name: 'Nora Quinn', skills: ['Plumbing'], van: null, zone: 'Jupiter', grade: 'H3', note: 'Helper 3 · rides with a lead' },
 ];
 let QSEQ = 601; const nextQ = () => 'Q-' + QSEQ++;
-const DIST = { t1: 4, t2: 9, t3: 12, t4: 18, t5: 15, t6: 27, t7: 6, t8: 13, t9: 11 };    // miles to the sample jobs' area
+const DIST = { t1: 4, t2: 9, t3: 12, t4: 18, t5: 15, t6: 27, t7: 6, t8: 13, t9: 11, t10: 5, t11: 17 };    // miles to the sample jobs' area
 
 // Standard procedure (the six steps added to the brief's scenarios are flagged)
 const STEPS = [
@@ -336,23 +353,25 @@ const BOARD = [   // today's scheduled jobs, minutes from midnight
   { tech: 't8', s: 8 * 60, e: 10 * 60, t: 'Gomez · water heater (helper)', st: 'done' },
   { tech: 't8', s: 11 * 60, e: 12 * 60 + 30, t: 'Shell Cove · drain line (helper)' },
   { tech: 't9', s: 8 * 60 + 30, e: 11 * 60 + 30, t: 'Marina Tower · transfer switch service' },
+  { tech: 't10', s: 8 * 60, e: 10 * 60, t: 'Shop · van loading and staging', st: 'done' },
+  { tech: 't11', s: 9 * 60, e: 11 * 60, t: 'Marina Tower · PEX inspection (helper)' },
 ];
 const QUEUE = [
   // kind: new call, crew job, augment (more people on a job already running), escalate (needs a higher level)
   // crew: one slot per person needed: role, minimum level, trade
   { id: 'Q-551', kind: 'New call', title: 'Water heater leaking', customer: 'Nguyen residence, Palm Beach Gardens', skill: 'Plumbing', part: 'T&P relief valve', mins: 90, pri: 'High',
-    crew: [{ role: 'Lead', lvl: 2, skill: 'Plumbing' }], by: 'AI phone answering · Tess Morgan (customer service) confirmed' },
+    crew: [{ role: 'Lead', need: 'tech', lvl: 2, skill: 'Plumbing' }], by: 'AI phone answering · Tess Morgan (customer service) confirmed' },
   { id: 'Q-552', kind: 'New call', title: 'AC short-cycling, commercial', customer: 'Coral Dental, Riviera Beach', skill: 'HVAC', part: 'Dual run capacitor 45/5 µF', mins: 75, pri: 'Normal',
-    crew: [{ role: 'Lead', lvl: 3, skill: 'HVAC' }], by: 'Loxone alert + customer call', why: 'Commercial controls diagnosis needs a level 3 technician' },
+    crew: [{ role: 'Lead', need: 'tech', lvl: 3, skill: 'HVAC' }], by: 'Loxone alert + customer call', why: 'Commercial controls diagnosis needs a level 3 technician' },
   { id: 'Q-553', kind: 'New call', title: 'Breaker trips on AC start', customer: 'Hale residence, Lake Worth', skill: 'Electrical', part: 'Hard start kit', mins: 60, pri: 'Normal',
-    crew: [{ role: 'Lead', lvl: 2, skill: 'Electrical' }], by: 'Customer portal booking' },
+    crew: [{ role: 'Lead', need: 'tech', lvl: 2, skill: 'Electrical' }], by: 'Customer portal booking' },
   { id: 'Q-557', kind: 'Crew job', title: 'Main sewer line replacement, building C', customer: 'Shell Cove HOA', skill: 'Plumbing', part: '6" PVC SDR-35, 80 ft', mins: 240, pri: 'Normal', at: 13 * 60,
-    crew: [{ role: 'Lead', lvl: 3, skill: 'Plumbing' }, { role: 'Pipe layer', lvl: 2, skill: 'Plumbing' }, { role: 'Helper', lvl: 1, skill: 'Plumbing' }],
+    crew: [{ role: 'Lead', need: 'tech', lvl: 3, skill: 'Plumbing' }, { role: 'Pipe layer', need: 'tech', lvl: 2, skill: 'Plumbing' }, { role: 'Helper', need: 'helper', lvl: 2, skill: 'Plumbing' }],
     by: 'Estimate EST-7731 approved · permit issued · Mike Rowan (service manager) set crew size', why: 'Excavation and a 6-inch line need three people' },
   { id: 'Q-555', kind: 'Augment', job: 'J-24120', title: 'Helper needed to set the new condenser', customer: 'Okafor residence', skill: 'HVAC', part: '—', mins: 120, pri: 'High', at: 13 * 60,
-    crew: [{ role: 'Helper', lvl: 1, skill: 'HVAC' }], by: 'Requested by Kayla Brooks from site at 10:20 AM', why: 'The condenser is too heavy to set safely alone' },
+    crew: [{ role: 'Helper', need: 'helper', lvl: 2, skill: 'HVAC' }], by: 'Requested by Kayla Brooks from site at 10:20 AM', why: 'The condenser is too heavy to set safely alone; a Helper 2 or higher knows safe lifting' },
   { id: 'Q-556', kind: 'Escalate', job: 'J-24122', title: 'Compressor will not start after repair', customer: 'Lopez residence', skill: 'HVAC', part: '—', mins: 60, pri: 'High',
-    crew: [{ role: 'Senior support', lvl: 3, skill: 'HVAC' }], by: 'Sam Whitaker (level 2) asked for level 3 support', why: 'Possible locked compressor: needs a senior diagnosis before quoting a replacement', remote: true },
+    crew: [{ role: 'Senior support', need: 'tech', lvl: 3, skill: 'HVAC' }], by: 'Sam Whitaker (level 2) asked for level 3 support', why: 'Possible locked compressor: needs a senior diagnosis before quoting a replacement', remote: true },
 ];
 
 const VAN_ITEMS = [
@@ -622,9 +641,29 @@ function formBody(r, s) {
 }
 
 // ============================================================ dispatch: levels, crews, augmentation, escalation
-const LVL = { 1: 'Level 1: apprentice or helper', 2: 'Level 2: service technician', 3: 'Level 3: senior or master technician' };
-const lvlTag = n => `<span class="lvl l${n}" title="${LVL[n]}">L${n}</span>`;
-const crewOf = q => q.crew || [{ role: 'Lead', lvl: q.pri === 'Urgent' ? 2 : 1, skill: q.skill }];
+// Grades. Technicians L1-L3 lead and repair. An apprentice (AP) is studying in an apprenticeship or trade program while
+// working: supervised hands-on work, always with a level 2 or 3 technician. Helpers H1-H3 support the crew and are not
+// in training for a license. A helper slot can be filled by a helper at that grade or higher, an apprentice, or a technician.
+const GRADES = {
+  L3: { track: 'tech', n: 3, name: 'Technician level 3', short: 'Senior or master technician', desc: 'Commercial systems and controls, refrigerant circuit and compressor work, crew lead on large jobs, senior support for others.' },
+  L2: { track: 'tech', n: 2, name: 'Technician level 2', short: 'Service technician', desc: 'Diagnosis and repair on residential systems, leading residential installs and routine commercial calls. Can supervise an apprentice.' },
+  L1: { track: 'tech', n: 1, name: 'Technician level 1', short: 'Entry technician', desc: 'Maintenance visits, filters and cleaning, simple repairs.' },
+  AP: { track: 'apprentice', n: 2, name: 'Apprentice', short: 'Studying while working', desc: 'Enrolled in an apprenticeship or trade school program and working at the same time. Does supervised hands-on work that counts toward a license, always paired with a level 2 or 3 technician. Can fill a helper slot up to Helper 2.' },
+  H3: { track: 'helper', n: 3, name: 'Helper 3', short: 'Senior helper', desc: 'Runs line sets and pipe, mounts equipment, does pre-start checks and guides other helpers.' },
+  H2: { track: 'helper', n: 2, name: 'Helper 2', short: 'Experienced helper', desc: 'Assists on installs, safe lifting and setting of equipment, basic tool work.' },
+  H1: { track: 'helper', n: 1, name: 'Helper 1', short: 'New helper', desc: 'Carries materials, site prep and cleanup, always working next to a lead.' },
+};
+const gradeTag = g => `<span class="lvl g-${g.toLowerCase()}" title="${GRADES[g].name}: ${GRADES[g].short}">${g}</span>`;
+const slotTag = sl => gradeTag((sl.need === 'helper' ? 'H' : 'L') + sl.lvl) + '<span class="plus">+</span>';
+const slotText = sl => sl.need === 'helper' ? `${sl.skill}, Helper ${sl.lvl} or higher (an apprentice${sl.lvl <= 2 ? '' : ' cannot'} or a technician can fill it)`.replace(' (an apprentice cannot or a technician', ' (a technician') : `${sl.skill}, technician level ${sl.lvl} or higher`;
+function fits(t, sl) {
+  const g = GRADES[t.grade];
+  if (!t.skills.includes(sl.skill)) return false;
+  if (sl.need === 'helper') return g.track === 'helper' ? g.n >= sl.lvl : g.track === 'apprentice' ? sl.lvl <= 2 : true;
+  return g.track === 'tech' && g.n >= sl.lvl;
+}
+const overBy = (t, sl) => { const g = GRADES[t.grade]; return sl.need === 'helper' ? (g.track === 'helper' ? g.n - sl.lvl : g.track === 'apprentice' ? 0 : 2 + g.n) : g.n - sl.lvl; };
+const crewOf = q => q.crew || [{ role: 'Lead', need: 'tech', lvl: q.pri === 'Urgent' ? 2 : 1, skill: q.skill }];
 const kindOf = q => q.kind || (q.pri === 'Urgent' ? 'Emergency' : 'New call');
 const KIND_PILL = { 'New call': 'plain', 'Crew job': 'info-p', 'Augment': 'warn', 'Escalate': 'bad', 'Emergency': 'bad' };
 const KIND_LABEL = { 'New call': 'New call', 'Crew job': 'Crew job', 'Augment': 'Add people to a job', 'Escalate': 'Escalation', 'Emergency': 'Emergency' };
@@ -640,10 +679,10 @@ function startFor(q, ids) {   // earliest start when everyone picked is free (a 
 }
 function candidates(q, slot, taken) {
   const s0 = firstStart(q);
-  return TECHS.filter(t => t.skills.includes(slot.skill) && t.level >= slot.lvl && !taken.includes(t.id)).map(t => {
+  return TECHS.filter(t => fits(t, slot) && !taken.includes(t.id)).map(t => {
     const van = VANS.find(v => v.id === t.van);
-    const part = slot.role !== 'Helper' && !!van && q.part !== '—' && van.stock.some(st => q.part.toLowerCase().startsWith(st.name.split(' ').slice(0, 2).join(' ').toLowerCase()) && st.qty > 0);
-    const free = !busyAt(t.id, s0, s0 + q.mins), over = t.level - slot.lvl;
+    const part = slot.need !== 'helper' && !!van && q.part !== '—' && van.stock.some(st => q.part.toLowerCase().startsWith(st.name.split(' ').slice(0, 2).join(' ').toLowerCase()) && st.qty > 0);
+    const free = !busyAt(t.id, s0, s0 + q.mins), over = overBy(t, slot);
     const score = (free ? 40 : 0) + (part ? 15 : 0) + Math.max(0, 25 - DIST[t.id]) + (over ? -8 * over : 10);   // keep senior people for harder work
     return { t, part, free, over, score };
   }).sort((a, b) => b.score - a.score);
@@ -661,10 +700,10 @@ const JOBS = [
   { id: 'J-24122', title: 'No cooling: capacitor and contactor', cust: 'Lopez residence', trade: 'HVAC', scen: 'A: routine call', status: 'On site',
     people: [['Booking', 'Customer app'], ['Dispatcher', 'Dana Kim'], ['Lead', 'Sam Whitaker (L2)'], ['Senior support', 'Requested, not assigned']] },
   { id: 'J-24125', title: 'Annual maintenance visit', cust: 'Bayview Condos, unit 4B', trade: 'HVAC', scen: 'D: maintenance agreement', status: 'Completed',
-    people: [['Scheduled by', 'Agreement MA-118'], ['Lead', 'Priya Nair (L1)'], ['Helper', 'Jordan Lee (L1)'], ['Quality check', 'Kayla Brooks (L2)']] },
-  { id: 'J-24127', title: 'PEX inspection', cust: 'Marina Tower', trade: 'Plumbing', scen: 'A: routine call', status: 'On site', people: [['Dispatcher', 'Dana Kim'], ['Lead', 'Lena Ortiz (L3)']] },
+    people: [['Scheduled by', 'Agreement MA-118'], ['Lead', 'Priya Nair (L1)'], ['Helper', 'Jordan Lee (AP)'], ['Quality check', 'Kayla Brooks (L2)']] },
+  { id: 'J-24127', title: 'PEX inspection', cust: 'Marina Tower', trade: 'Plumbing', scen: 'A: routine call', status: 'On site', people: [['Dispatcher', 'Dana Kim'], ['Lead', 'Lena Ortiz (L3)'], ['Helper', 'Nora Quinn (H3)']] },
   { id: 'J-24128', title: 'Generator transfer switch service', cust: 'Marina Tower', trade: 'Electrical', scen: 'D: maintenance agreement', status: 'On site', people: [['Dispatcher', 'Dana Kim'], ['Lead', 'Ray Thompson (L3)']] },
-  { id: 'J-24129', title: 'Drain line repair', cust: 'Shell Cove HOA', trade: 'Plumbing', scen: 'A: routine call', status: 'Scheduled 11:00 AM', people: [['Dispatcher', 'Dana Kim'], ['Lead', 'Andre Pierce (L2)'], ['Helper', 'Chris Vega (L1)']] },
+  { id: 'J-24129', title: 'Drain line repair', cust: 'Shell Cove HOA', trade: 'Plumbing', scen: 'A: routine call', status: 'Scheduled 11:00 AM', people: [['Dispatcher', 'Dana Kim'], ['Lead', 'Andre Pierce (L2)'], ['Helper', 'Chris Vega (H2)']] },
 ];
 const NOTIFY = [
   ['7:55 AM', 'Nguyen residence', 'SMS', 'Request received. We will text you a time shortly.'],
@@ -681,7 +720,10 @@ VIEWS.dispatch = () => {
   const q = QUEUE.find(j => j.id === STATE.qsel);
   if (q && (!STATE.picks || STATE.picksFor !== q.id)) { STATE.picks = autoPick(q); STATE.picksFor = q.id; }
   const slots = q ? crewOf(q) : [], picks = q ? STATE.picks : [];
-  const start = q && picks.every(Boolean) ? startFor(q, picks) : null;
+  const pickedT = picks.filter(Boolean).map(id => TECHS.find(t => t.id === id));
+  const jobLead = q?.job && JOBS.find(j => j.id === q.job)?.people.some(p => /\(L[23]\)/.test(p[1]));
+  const apNoLead = !!q && pickedT.some(t => t.grade === 'AP') && !pickedT.some(t => GRADES[t.grade].track === 'tech' && GRADES[t.grade].n >= 2) && !jobLead;
+  const start = q && picks.every(Boolean) && !apNoLead ? startFor(q, picks) : null;
   const free = TECHS.filter(t => statusOf(t)[1] === 'Free now').length, onjob = TECHS.filter(t => nowBlock(t.id)).length;
   const trades = ['HVAC', 'Plumbing', 'Electrical'].map(tr => {
     const ts = TECHS.filter(t => (t.skills[0] === 'Electronics' ? 'HVAC' : t.skills[0]) === tr);
@@ -696,7 +738,7 @@ VIEWS.dispatch = () => {
   <div class="kpis" style="margin-top:16px">
     <a class="kpi ${QUEUE.some(j => j.pri !== 'Normal') ? 'alert' : ''}" href="#dispatch" data-jump="issues"><span class="v">${QUEUE.length}</span><span class="l">Issues to address</span><span class="note">${QUEUE.filter(j => crewOf(j).length > 1).length} need more than one person · ${QUEUE.filter(j => j.pri !== 'Normal').length} high or urgent</span></a>
     <a class="kpi" href="#dispatch" data-jump="techs"><span class="v">${TECHS.length}</span><span class="l">Technicians on shift</span><span class="note">${free} free now · ${onjob} on a job</span></a>
-    <a class="kpi" href="#dispatch" data-jump="jobs"><span class="v">${JOBS.length}</span><span class="l">Jobs today</span><span class="note">${JOBS.filter(j => j.status === 'Completed').length} completed · ${JOBS.filter(j => j.people.filter(p => /\(L\d\)/.test(p[1])).length > 1).length} with a crew</span></a>
+    <a class="kpi" href="#dispatch" data-jump="jobs"><span class="v">${JOBS.length}</span><span class="l">Jobs today</span><span class="note">${JOBS.filter(j => j.status === 'Completed').length} completed · ${JOBS.filter(j => j.people.filter(p => /\((L\d|H\d|AP)\)/.test(p[1])).length > 1).length} with a crew</span></a>
     <div class="kpi"><span class="v">38 min</span><span class="l">Dispatch to arrival</span><span class="note">Average this week, sample data</span></div>
     <div class="kpi"><span class="v">86%</span><span class="l">Fixed on the first visit</span><span class="note">This month, sample data</span></div>
     <a class="kpi" href="#dispatch" data-jump="oncall"><span class="v">${tname('t1').split(' ')[0]}</span><span class="l">On call tonight (HVAC)</span><span class="note">Plumbing ${tname('t3').split(' ')[0]} · electrical ${tname('t9').split(' ')[0]}</span></a>
@@ -704,32 +746,32 @@ VIEWS.dispatch = () => {
   <div class="grid g-side" style="margin-top:16px">
     <section class="panel" id="sec-issues"><div class="panel-head"><h2>Issues to address</h2>${info('Issues to address', 'Everything waiting for a decision: new calls, crew jobs that need several people, requests to add people to a job already running, and escalations to a higher technician level. Calls, the customer portal, maintenance agreements and Loxone alerts all land here.')}</div>
       <div class="list">${QUEUE.length ? QUEUE.map(j => { const c = crewOf(j), k = kindOf(j); return `<button class="item ${j.id === STATE.qsel ? 'sel' : ''}" type="button" data-q="${j.id}"><div class="top"><b>${j.title}</b>${pill(j.pri === 'Urgent' ? 'bad' : j.pri === 'High' ? 'warn' : 'plain', j.pri)}</div>
-        <div class="row" style="gap:6px">${pill(KIND_PILL[k], KIND_LABEL[k])}${j.job ? `<span class="small muted">on ${j.job}</span>` : ''}<span class="small">${c.length > 1 ? `<b>${c.length} people:</b> ` : 'Needs '}${c.map(s => `${s.role.toLowerCase()} ${lvlTag(s.lvl)}`).join(', ')}</span></div>
+        <div class="row" style="gap:6px">${pill(KIND_PILL[k], KIND_LABEL[k])}${j.job ? `<span class="small muted">on ${j.job}</span>` : ''}<span class="small">${c.length > 1 ? `<b>${c.length} people:</b> ` : 'Needs '}${c.map(s => `${s.role.toLowerCase()} ${slotTag(s)}`).join(', ')}</span></div>
         <span class="small muted">${j.customer} · ${j.skill}${j.part !== '—' ? ' · ' + j.part : ''}${j.at ? ' · starts ' + hhmm(j.at) : ''}</span></button>`; }).join('') : '<p class="muted">Nothing to address. Every job is on the board.</p>'}</div></section>
-    <section class="panel" id="sec-crew"><div class="panel-head"><h2>${q ? (slots.length > 1 ? 'Build the crew' : 'Choose the technician') + ' for ' + q.id : 'Crew and technician'}</h2>${info('Choosing people', 'Each person needed is a slot with a role, a minimum level and a trade. Only technicians at that level or higher are offered, ranked by who is free, distance and whether the part is on their van. Senior technicians are held back from simple work when someone at the right level is free.')}</div>
+    <section class="panel" id="sec-crew"><div class="panel-head"><h2>${q ? (slots.length > 1 ? 'Build the crew' : 'Choose the technician') + ' for ' + q.id : 'Crew and technician'}</h2>${info('Choosing people', 'Each person needed is a slot with a role, a minimum grade and a trade. Technician slots take technicians at that level or higher. Helper slots take helpers at that grade or higher, an apprentice (up to Helper 2), or a technician. People are ranked by who is free, distance and whether the part is on their van, and higher grades are held back from simpler work when someone at the right grade is free. An apprentice is only dispatched with a level 2 or 3 technician on the job.')}</div>
       ${q ? `<p class="small" style="margin-bottom:6px"><b>${q.title}</b> · ${q.customer}</p>
         <p class="small muted" style="margin-bottom:10px">${q.by || 'New request'}${q.why ? '. ' + q.why + '.' : ''}</p>
-        ${slots.map((sl, i) => { const cs = candidates(q, sl, picks.filter((p, j) => j !== i && p)).slice(0, 3); return `<div class="slot"><div class="slot-head"><b>${i + 1}. ${sl.role}</b> ${lvlTag(sl.lvl)} <span class="small muted">${sl.skill}, level ${sl.lvl} or higher</span></div>
-          ${cs.length ? `<div class="list">${cs.map(c => `<button class="item opt ${picks[i] === c.t.id ? 'sel' : ''}" type="button" data-slot="${i}" data-tech="${c.t.id}" aria-pressed="${picks[i] === c.t.id}"><div class="top"><b>${c.t.name} ${lvlTag(c.t.level)}</b><span class="small muted">${DIST[c.t.id]} mi</span></div>
-            <div class="row" style="gap:6px">${c.free ? pill('ok', 'Free at ' + hhmm(firstStart(q))) : pill('warn', 'Busy then: starts later')}${c.part ? pill('ok', 'Part on ' + c.t.van) : ''}${c.over ? pill('plain', 'Above the level needed') : ''}</div></button>`).join('')}</div>` : '<p class="small" style="color:var(--red)">No qualified technician on shift. Ask the service manager or call in on-call staff.</p>'}</div>`; }).join('')}
-        <div class="row" style="justify-content:space-between;margin-top:12px"><span class="small">${start ? `Start <b>${hhmm(start)}</b> · ${q.mins} min${q.job ? ' · added to ' + q.job : ''}` : 'Pick someone for every slot'}</span>
+        ${slots.map((sl, i) => { const cs = candidates(q, sl, picks.filter((p, j) => j !== i && p)).slice(0, 3); return `<div class="slot"><div class="slot-head"><b>${i + 1}. ${sl.role}</b> ${slotTag(sl)} <span class="small muted">${slotText(sl)}</span></div>
+          ${cs.length ? `<div class="list">${cs.map(c => `<button class="item opt ${picks[i] === c.t.id ? 'sel' : ''}" type="button" data-slot="${i}" data-tech="${c.t.id}" aria-pressed="${picks[i] === c.t.id}"><div class="top"><b>${c.t.name} ${gradeTag(c.t.grade)}</b><span class="small muted">${DIST[c.t.id]} mi</span></div>
+            <div class="row" style="gap:6px">${c.free ? pill('ok', 'Free at ' + hhmm(firstStart(q))) : pill('warn', 'Busy then: starts later')}${c.part ? pill('ok', 'Part on ' + c.t.van) : ''}${c.over ? pill('plain', 'Above the grade needed') : ''}${c.t.grade === 'AP' ? pill('info-p', 'Apprentice: learning on the job') : ''}</div></button>`).join('')}</div>` : '<p class="small" style="color:var(--red)">No qualified technician on shift. Ask the service manager or call in on-call staff.</p>'}</div>`; }).join('')}
+        <div class="row" style="justify-content:space-between;margin-top:12px"><span class="small">${apNoLead ? '<span style="color:var(--red)">An apprentice needs a level 2 or 3 technician on the same job. Add one or choose someone else.</span>' : start ? `Start <b>${hhmm(start)}</b> · ${q.mins} min${q.job ? ' · added to ' + q.job : ''}` : 'Pick someone for every slot'}</span>
           <div class="row">${q.remote ? `<button class="btn" type="button" id="remote" ${picks[0] ? '' : 'disabled'}>Remote video assist first</button>` : ''}<button class="btn primary" type="button" id="dsend" ${start ? '' : 'disabled'}>${slots.length > 1 ? 'Dispatch crew' : q.kind === 'Augment' ? 'Add to job' : 'Dispatch'}</button></div></div>`
       : '<p class="muted">Choose an issue to see who should go. Jobs that need several people get one slot per person, each with its minimum level.</p>'}</section>
   </div>
-  <section class="panel" id="sec-board" style="margin-top:16px"><div class="panel-head"><h2>Today's board</h2>${info('Board', 'One row per technician, including apprentices who ride with a lead. Crew members on the same job appear in each person\'s row at the same time. The red line is now.')}</div>
+  <section class="panel" id="sec-board" style="margin-top:16px"><div class="panel-head"><h2>Today's Dispatch Board</h2>${info('Board', 'One row per technician, including apprentices who ride with a lead. Crew members on the same job appear in each person\'s row at the same time. The red line is now.')}</div>
   <div class="board"><div class="board-inner">
     <div class="b-row b-head"><div class="b-name"><b>Technician</b></div><div class="b-track">${Array.from({ length: 11 }, (_, i) => `<span>${hhmm((7 + i) * 60).replace(':00', '')}</span>`).join('')}</div></div>
-    ${TECHS.map(t => `<div class="b-row"><div class="b-name"><b>${t.name} ${lvlTag(t.level)}</b><span class="muted">${t.van || 'No van'} · ${t.skills.join(', ')}</span></div><div class="b-track"><div class="nowline" style="left:${x(NOW_MIN)}%" aria-hidden="true"></div>${BOARD.filter(b => b.tech === t.id).map(b => { const [c, w] = b.t.split(' · '), work = w ? w[0].toUpperCase() + w.slice(1) : b.t; return `<div class="blk ${b.st || ''}" style="left:${x(b.s)}%;width:${x(b.e) - x(b.s)}%" title="${VIEWER.restricted ? work : b.t}"><b>${w ? work + ' · ' + c : b.t}</b>${hhmm(b.s)}–${hhmm(b.e)}</div>`; }).join('')}</div></div>`).join('')}
+    ${TECHS.map(t => `<div class="b-row"><div class="b-name"><b>${t.name} ${gradeTag(t.grade)}</b><span class="muted">${t.van || 'No van'} · ${t.skills.join(', ')}</span></div><div class="b-track"><div class="nowline" style="left:${x(NOW_MIN)}%" aria-hidden="true"></div>${BOARD.filter(b => b.tech === t.id).map(b => { const [c, w] = b.t.split(' · '), work = w ? w[0].toUpperCase() + w.slice(1) : b.t; return `<div class="blk ${b.st || ''}" style="left:${x(b.s)}%;width:${x(b.e) - x(b.s)}%" title="${VIEWER.restricted ? work : b.t}"><b>${w ? work + ' · ' + c : b.t}</b>${hhmm(b.s)}–${hhmm(b.e)}</div>`; }).join('')}</div></div>`).join('')}
   </div></div></section>
   <section class="panel" id="sec-techs" style="margin-top:16px"><div class="panel-head"><h2>Technician status</h2><span class="sub">at ${hhmm(NOW_MIN)}</span></div>
-    <div class="table-wrap"><table><thead><tr><th>Technician</th><th>Level</th><th>Trades</th><th>Now</th><th>Current or next job</th><th>Vehicle</th><th class="num">Booked today</th></tr></thead><tbody>
-    ${TECHS.map(t => { const st = statusOf(t), n = nowBlock(t.id) || nextBlock(t.id), mins = BOARD.filter(b => b.tech === t.id).reduce((s, b) => s + (b.e - b.s), 0); return `<tr><td><b>${t.name}</b></td><td>${lvlTag(t.level)}</td><td class="small">${t.skills.join(', ')}</td><td>${pill(st[0], st[1])}</td>
+    <div class="table-wrap"><table><thead><tr><th>Technician</th><th>Grade</th><th>Trades</th><th>Now</th><th>Current or next job</th><th>Vehicle</th><th class="num">Booked today</th></tr></thead><tbody>
+    ${TECHS.map(t => { const st = statusOf(t), n = nowBlock(t.id) || nextBlock(t.id), mins = BOARD.filter(b => b.tech === t.id).reduce((s, b) => s + (b.e - b.s), 0); return `<tr><td><b>${t.name}</b></td><td>${gradeTag(t.grade)}</td><td class="small">${t.skills.join(', ')}</td><td>${pill(st[0], st[1])}</td>
       <td class="small">${n ? `${n.t} <span class="muted">· ${hhmm(n.s)}–${hhmm(n.e)}</span>` : '<span class="muted">Nothing booked</span>'}</td><td class="small">${t.van || t.note}</td><td class="num">${(mins / 60).toFixed(1)} h</td></tr>`; }).join('')}
     </tbody></table></div></section>
   <section class="panel" id="sec-jobs" style="margin-top:16px"><div class="panel-head"><h2>Jobs today and everyone involved</h2>${info('People involved', 'Every job lists each person who touches it, from the first call to payment: customer service, dispatcher, the lead and crew with their levels, sales, purchasing, approvals, warehouse, permits and accounts. Adding people to a running job or escalating it updates this list.')}</div>
     <div class="table-wrap"><table><thead><tr><th>Job</th><th>Trade</th><th>Scenario</th><th>People involved</th><th>Status</th></tr></thead><tbody>
     ${JOBS.map(j => `<tr><td><b>${j.id}</b><div class="small">${j.title}</div><div class="small muted">${j.cust}</div></td><td class="small">${j.trade}</td><td class="small">${j.scen}</td>
-      <td><div class="people">${j.people.map(([r, n]) => `<span class="person ${/Requested/.test(n) ? 'open' : ''}"><span class="muted">${r}:</span> ${n.replace(/\((L\d)\)/, (m, l) => lvlTag(+l[1]))}</span>`).join('')}</div></td>
+      <td><div class="people">${j.people.map(([r, n]) => `<span class="person ${/Requested/.test(n) ? 'open' : ''}"><span class="muted">${r}:</span> ${n.replace(/\((L\d|H\d|AP)\)/, (m, g) => gradeTag(g))}</span>`).join('')}</div></td>
       <td>${pill(j.status === 'Completed' ? 'ok' : j.status === 'On site' ? 'info-p' : j.status.startsWith('Waiting') ? 'warn' : 'plain', j.status)}</td></tr>`).join('')}
     </tbody></table></div></section>
   <div class="grid g2" style="margin-top:16px">
@@ -742,15 +784,16 @@ VIEWS.dispatch = () => {
     <section class="panel" id="sec-notify"><div class="panel-head"><h2>Customer updates sent</h2>${info('Customer updates', 'Customers are told when a request is received, when a technician is on the way with an arrival time, and when plans change. Texts honor SMS opt-outs.')}</div>
       <div class="table-wrap"><table><tbody>${NOTIFY.slice().reverse().map(n => `<tr><td class="small muted" style="white-space:nowrap">${n[0]}</td><td class="small"><b>${n[1]}</b> · ${n[2]}<div>${n[3]}</div></td></tr>`).join('')}</tbody></table></div></section>
     <section class="panel" id="sec-oncall"><div class="panel-head"><h2>On call tonight</h2>${info('After hours', 'After 6 PM calls go to AI phone answering. Emergencies (no cooling or heat with vulnerable occupants, active leaks, burning smell, tripped main) page the on-call technician; everything else is booked for the morning.')}</div>
-      <div class="table-wrap"><table><thead><tr><th>Trade</th><th>On call</th><th>Backup</th></tr></thead><tbody>${ONCALL.map(([tr, a, b]) => { const A = TECHS.find(t => t.id === a), B = TECHS.find(t => t.id === b); return `<tr><td>${tr}</td><td>${A.name} ${lvlTag(A.level)}</td><td>${B.name} ${lvlTag(B.level)}</td></tr>`; }).join('')}</tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Trade</th><th>On call</th><th>Backup</th></tr></thead><tbody>${ONCALL.map(([tr, a, b]) => { const A = TECHS.find(t => t.id === a), B = TECHS.find(t => t.id === b); return `<tr><td>${tr}</td><td>${A.name} ${gradeTag(A.grade)}</td><td>${B.name} ${gradeTag(B.grade)}</td></tr>`; }).join('')}</tbody></table></div>
       <p class="small muted" style="margin-top:8px">6 PM to 7 AM. Escalations go to Mike Rowan (service manager).</p></section>
   </div>
-  <section class="panel" id="sec-scen" style="margin-top:16px"><div class="panel-head"><h2>Technician levels and dispatch scenarios</h2></div>
-    <div class="grid g3" style="margin-bottom:14px">${[1, 2, 3].map(n => `<div class="item"><b>${lvlTag(n)} ${LVL[n].split(': ')[1][0].toUpperCase() + LVL[n].split(': ')[1].slice(1)}</b><span class="small">${['Maintenance visits, filters and cleaning, helping on installs and crews, simple repairs with a lead nearby.', 'Diagnosis and repair on residential systems, leading residential installs and routine commercial calls.', 'Commercial systems and controls, refrigerant circuit and compressor work, crew lead on large jobs, senior support for others.'][n - 1]}</span></div>`).join('')}</div>
+  <section class="panel" id="sec-scen" style="margin-top:16px"><div class="panel-head"><h2>Technician levels and dispatch scenarios</h2>${info('Grades', 'Technicians, apprentices and helpers are separate. Technicians (level 1 to 3) lead and repair. Apprentices are studying in an apprenticeship or trade program while they work. Helpers (Helper 1 to 3) support the crew and are not in training for a license.')}</div>
+    <div class="grades">${[['Technicians', 'Lead the work and repair', ['L3', 'L2', 'L1']], ['Apprentice', 'Studying while working', ['AP']], ['Helpers', 'Support the crew', ['H3', 'H2', 'H1']]].map(([h, sub, gs]) => `<div class="grade-col"><div class="grade-head"><b>${h}</b><span class="small muted">${sub}</span></div>${gs.map(g => `<div class="item"><b>${gradeTag(g)} ${GRADES[g].name}</b><span class="small">${GRADES[g].desc}</span></div>`).join('')}</div>`).join('')}</div>
+    <h3 style="margin:16px 0 8px">Dispatch scenarios</h3>
     <div class="grid g3">${[
       ['One technician', 'Routine call', 'Customer service or AI phone takes the call → dispatcher picks one technician at the right level → customer gets an arrival time → office invoices.'],
       ['Higher level required', 'Minimum level on the job', 'The issue states a minimum level, so only qualified technicians are offered. Senior people are held back from simple work when someone at the right level is free.'],
-      ['Crew job', 'Several people, one job', 'The service manager sets the crew at estimate approval (lead, installer, helper). The dispatcher books everyone for the same start; all time and costs go to one job.'],
+      ['Crew job', 'Several people, one job', 'The service manager sets the crew at estimate approval, for example a level 3 lead, a level 2 installer and a Helper 2. The dispatcher books everyone for the same start; all time and costs go to one job. An apprentice joins only with a level 2 or 3 technician.'],
       ['Add people to a running job', 'Augmentation', 'The lead asks for help from the field app. The request lands here, the dispatcher adds people to the same job, and the lead is told when help arrives. The customer is not re-booked.'],
       ['Escalation', 'Senior support', 'A level 1 or 2 technician asks for level 3 help. Remote video assist comes first; a senior visit is booked only if needed. The service manager sees every escalation.'],
       ['Emergency and after hours', 'Urgent', 'A Loxone alarm or emergency call is marked urgent and goes to the top. After 6 PM the on-call technician is paged and the customer gets an arrival time.'],
@@ -764,14 +807,14 @@ VIEWS.dispatch = () => {
     confirmBox({ title: `${q.kind === 'Augment' ? 'Add to ' + q.job : 'Dispatch ' + q.id}?`, ok: slots.length > 1 ? 'Dispatch crew' : q.kind === 'Augment' ? 'Add to job' : 'Dispatch',
       check: 'I checked the people, levels and time with the job requirements.',
       html: `<p class="small"><b>${q.title}</b> · ${q.customer}</p><p class="small" style="margin:4px 0 10px">${hhmm(start)}–${hhmm(end)}${q.job ? ' · joins ' + q.job : ''}</p>
-        <div class="table-wrap"><table><thead><tr><th>Role</th><th>Person</th><th>Level</th></tr></thead><tbody>${crew.map(([sl, t]) => `<tr><td>${sl.role}</td><td>${t.name}</td><td>${lvlTag(t.level)} <span class="small muted">needs ${sl.lvl}+</span></td></tr>`).join('')}</tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Role</th><th>Person</th><th>Grade</th></tr></thead><tbody>${crew.map(([sl, t]) => `<tr><td>${sl.role}</td><td>${t.name}</td><td>${gradeTag(t.grade)} <span class="small muted">needs ${slotTag(sl)}</span></td></tr>`).join('')}</tbody></table></div>
         <p class="small muted" style="margin-top:10px">Notified: ${crew.map(c => c[1].name.split(' ')[0]).join(', ')} in the app${q.kind === 'Augment' || q.kind === 'Escalate' ? ', the technician on site' : ', the customer by SMS and email'}, and Dana Kim (dispatcher).</p>`,
       onOk: () => {
         const jobId = q.job || 'J-' + (24130 + JOBS.length), short = q.customer.split(',')[0];
         crew.forEach(([sl, t]) => BOARD.push({ tech: t.id, s: start, e: end, t: `${short} · ${q.title.toLowerCase()}${sl.role === 'Lead' ? '' : ' (' + sl.role.toLowerCase() + ')'}`, st: q.pri === 'Urgent' ? 'urgent new' : 'new' }));
         let job = JOBS.find(j => j.id === jobId);
         if (!job) { job = { id: jobId, title: q.title, cust: q.customer, trade: q.skill, scen: kindOf(q) === 'Crew job' ? 'Crew job' : kindOf(q) === 'Emergency' ? 'Emergency' : 'A: routine call', status: 'Scheduled ' + hhmm(start), people: [['Dispatcher', 'Dana Kim']] }; JOBS.push(job); }
-        crew.forEach(([sl, t]) => { const who = `${t.name} (L${t.level})`, row = job.people.find(p => p[0] === sl.role && /Requested/.test(p[1])); if (row) row[1] = who; else job.people.push([sl.role, who]); });
+        crew.forEach(([sl, t]) => { const who = `${t.name} (${t.grade})`, row = job.people.find(p => p[0] === sl.role && /Requested/.test(p[1])); if (row) row[1] = who; else job.people.push([sl.role, who]); });
         NOTIFY.push([hhmm(NOW_MIN), q.customer.split(',')[0], 'SMS', q.kind === 'Augment' ? `A second technician joins the crew at ${hhmm(start)}.` : `${lead.name} ${crew.length > 1 ? 'and crew are' : 'is'} scheduled for ${hhmm(start)}.`]);
         QUEUE.splice(QUEUE.indexOf(q), 1); STATE.qsel = null;
         toast(q.kind === 'Augment' ? `${crew.map(c => c[1].name).join(', ')} added to ${jobId} from ${hhmm(start)}. ${q.by.split(' ')[2]} ${q.by.split(' ')[3]} notified.` : `${q.id} dispatched: ${crew.map(c => c[1].name).join(', ')} at ${hhmm(start)}. Customer notified.`);
@@ -780,7 +823,7 @@ VIEWS.dispatch = () => {
   });
   V.querySelector('#remote')?.addEventListener('click', () => {
     const t = TECHS.find(x => x.id === picks[0]), job = JOBS.find(j => j.id === q.job);
-    if (job) { const row = job.people.find(p => /Requested/.test(p[1])); if (row) row[1] = `${t.name} (L${t.level}), remote video`; }
+    if (job) { const row = job.people.find(p => /Requested/.test(p[1])); if (row) row[1] = `${t.name} (${t.grade}), remote video`; }
     QUEUE.splice(QUEUE.indexOf(q), 1); STATE.qsel = null;
     toast(`${t.name} joined ${q.job} by video. A site visit is booked only if the remote diagnosis needs one.`); renderNav(); VIEWS.dispatch();
   });
@@ -948,8 +991,25 @@ const WH = {
     { t: '9:58 AM', door: 'Side door', item: 'Digital micron gauge (T-01)', rfid: 'Tool tag out', cam: 'Person not identified', check: 'No checkout', res: 'review' },
   ],
   released: {},
+  // Hold zones: stock that is not available to release. Each line is its own record with a reason and a next step.
+  holdZones: [
+    ['RTN', 'For return', 'Waiting to go back to a supplier or manufacturer: wrong parts, overstock and warranty returns. Not available for release.'],
+    ['DMG', 'Damaged', 'Quarantined: damaged on delivery, dropped or failed. Not available for release until it is returned, repaired or written off.'],
+    ['RPR', 'Repaired', 'Back from repair or rebuilt in the shop. Goes back into stock once it passes its test.'],
+  ],
+  held: [
+    { id: 'H-101', zone: 'RTN', sku: 'FAN-14', name: 'Condenser fan motor 1/4 HP', qty: 2, cost: 286, bin: 'RTN-01', why: 'Wrong rotation shipped on PO-8807', ref: 'RMA 55120 · Johnstone Supply', days: 3 },
+    { id: 'H-102', zone: 'RTN', sku: 'PEXF-34', name: 'PEX-A fittings 3/4" (bag of 25)', qty: 6, cost: 46, bin: 'RTN-02', why: 'Overstock from a cancelled job', ref: '10% restocking fee', days: 12 },
+    { id: 'H-103', zone: 'RTN', sku: 'CMP-3T', name: 'Compressor 3-ton, failed core', qty: 1, cost: 0, bin: 'RTN-03', why: 'Warranty replacement on J-24088; the core goes back', ref: 'Warranty claim WC-3391', days: 5 },
+    { id: 'H-201', zone: 'DMG', sku: 'AH-3T', name: '3-ton air handler', qty: 1, cost: 1640, bin: 'DMG-01', why: 'Cabinet crushed in delivery (PO-8798)', ref: 'Freight claim open', days: 4 },
+    { id: 'H-202', zone: 'DMG', sku: 'REF-410', name: 'R-410A cylinder 25 lb', qty: 1, cost: 210, bin: 'DMG-02 (cage)', why: 'Dented valve: do not use', ref: 'Safety hold', days: 1 },
+    { id: 'H-203', zone: 'DMG', sku: 'TL-MIC', name: 'Digital micron gauge', qty: 1, cost: 189, bin: 'DMG-03', why: 'Dropped on site, reads high', ref: 'Returned from V-104', days: 2 },
+    { id: 'H-301', zone: 'RPR', sku: 'TL-VP6', name: 'Vacuum pump 6 CFM', qty: 1, cost: 420, bin: 'RPR-01', why: 'Rebuilt: new seals and oil', ref: 'Test: pulls 50 microns', days: 1 },
+    { id: 'H-302', zone: 'RPR', sku: 'BLW-12', name: 'Blower motor 1/2 HP', qty: 1, cost: 412, bin: 'RPR-02', why: 'Bearings replaced by the motor shop', ref: 'Bench test passed', days: 6 },
+  ].map(h => ({ ...h, status: 'held' })),
 };
 const whValue = it => it.qty * it.cost;
+const whHeld = z => WH.held.filter(h => h.status === 'held' && (!z || h.zone === z));
 const whLow = () => WH.items.filter(i => i.qty < i.min);
 const whItem = sku => WH.items.find(i => i.sku === sku);
 const restockFor = v => v.stock.filter(s => s.qty < s.min && whItem(s.sku)).map(s => ({ s, need: s.min - s.qty + (s.tag === 'Tool tag' ? 0 : 1) }));
@@ -965,21 +1025,28 @@ VIEWS.warehouse = () => {
   view(`
   <h1>Warehouse</h1><p class="lead">${WH.name}: stock by zone and bin, receiving against purchase orders, tonight's van restock and every movement through the doors.</p>
   <section class="summary-note" id="sec-summary" aria-labelledby="inv-sum"><div class="row" style="gap:8px"><h2 id="inv-sum">Inventory summary</h2><span class="pill plain">As of ${hhmm(NOW_MIN)} today</span></div>
-    <p class="small">These figures cover the <b>main warehouse only</b>; stock already on the vans is on <a href="#inventory">Van inventory</a>. <b>Stock value</b> is what the shelves hold, at last purchase cost. <b>Below minimum</b> counts items that need a purchase request. <b>Deliveries due</b> are purchase orders expected today. <b>Vans to restock</b> come from what each van used today. <b>Door movements</b> are items the RFID readers and cameras could not match to a checkout.</p></section>
+    <p class="small">These figures cover the <b>main warehouse only</b>; stock already on the vans is on <a href="#inventory">Van inventory</a>. <b>Stock value</b> is what the shelves hold, at last purchase cost. <b>Below minimum</b> counts items that need a purchase request. <b>Deliveries due</b> are purchase orders expected today. <b>Vans to restock</b> come from what each van used today. <b>Door movements</b> are items the RFID readers and cameras could not match to a checkout. <b>Hold zones</b> (For return, Damaged, Repaired) are counted separately and are never released to vans.</p></section>
   <div class="kpis" style="margin-top:12px">
     <div class="kpi"><span class="v">${fmt$(total)}</span><span class="l">Stock value on hand</span><span class="note">${WH.items.length} SKUs in ${WH.zones.length} zones</span></div>
     <a class="kpi ${low.length ? 'alert' : ''}" href="#warehouse" data-jump="stock"><span class="v">${low.length}</span><span class="l">Items below minimum</span><span class="note">${low.length ? 'Reorder requests needed' : 'All above minimum'}</span></a>
     <a class="kpi" href="#warehouse" data-jump="inbound"><span class="v">${due.length}</span><span class="l">Deliveries due today</span><span class="note">Receive against the PO</span></a>
     <a class="kpi" href="#warehouse" data-jump="restock"><span class="v">${restockDue().length}</span><span class="l">Vans to restock tonight</span><span class="note">From today's usage</span></a>
+    <a class="kpi" href="#warehouse" data-jump="holds"><span class="v">${whHeld().length}</span><span class="l">Lines in hold zones</span><span class="note">${WH.holdZones.map(([z, n]) => `${whHeld(z).length} ${n.toLowerCase()}`).join(' · ')}</span></a>
     <a class="kpi ${whReview() ? 'alert' : ''}" href="#warehouse" data-jump="portal"><span class="v">${whReview()}</span><span class="l">Door movements to review</span><span class="note">RFID and camera at the doors</span></a>
   </div>
   <div class="grid g-side" style="margin-top:16px">
     <section class="panel"><div class="panel-head"><h2>Stock value by zone</h2>${info('Zones', 'The warehouse uses the same storage hierarchy as the rest of the app: warehouse, zone, shelf and bin, with no limit on depth.')}</div>
-      <div class="list">${byZone.map(z => `<button class="score" type="button" data-zone="${z[0]}" style="background:none;border:0;padding:4px 0;text-align:left"><div><div class="small">Zone ${z[0]} · ${z[1]}</div><div class="bar"><i style="width:${Math.round(z[2] / maxZ * 100)}%"></i></div></div><b>${fmt$(z[2])}</b></button>`).join('')}</div></section>
+      <div class="list">${byZone.map(z => `<button class="score" type="button" data-zone="${z[0]}" style="background:none;border:0;padding:4px 0;text-align:left"><div><div class="small">Zone ${z[0]} · ${z[1]}</div><div class="bar"><i style="width:${Math.round(z[2] / maxZ * 100)}%"></i></div></div><b>${fmt$(z[2])}</b></button>`).join('')}
+        <p class="small muted" style="margin-top:4px">Hold zones, not available for release:</p>
+        ${WH.holdZones.map(([z, n]) => { const v = whHeld(z).reduce((s, h) => s + h.qty * h.cost, 0); return `<a class="score" href="#warehouse" data-jump="holds" style="text-decoration:none;color:inherit;padding:4px 0"><div><div class="small">Zone ${z} · ${n} · ${whHeld(z).length} lines</div><div class="bar hold-bar"><i style="width:${Math.round(v / maxZ * 100)}%"></i></div></div><b>${fmt$(v)}</b></a>`; }).join('')}</div></section>
     <section class="panel" id="sec-restock"><div class="panel-head"><h2>Tonight's van restock</h2>${info('Restock', 'Each van is refilled to its minimum from what it used today, so technicians start the morning with what their usual calls need instead of driving to a supply house.')}</div>
       <div class="list">${VANS.filter(v => restockFor(v).length).map(v => { const r = restockFor(v), done = WH.released[v.id]; return `<div class="item"><div class="top"><b>${v.id} · ${TECHS.find(t => t.id === v.tech).name}</b>${done ? pill('ok', 'Released') : pill('warn', r.length + (r.length === 1 ? ' line' : ' lines'))}</div>
         <span class="small muted">${r.map(x => `${x.need} × ${x.s.name}`).join(' · ')}</span>${done ? '' : `<div><button class="btn sm primary" type="button" data-release="${v.id}">Pick and release</button></div>`}</div>`; }).join('') || '<p class="muted">Every van is at its minimum.</p>'}</div></section>
   </div>
+  <section class="panel" id="sec-holds" style="margin-top:16px"><div class="panel-head"><h2>For return, damaged and repaired</h2>${info('Hold zones', 'These zones keep stock that must not go out to vans. For return waits to go back to a supplier; Damaged is quarantined until it is returned, repaired or written off; Repaired goes back into stock after its test. Every move needs a confirmation and is logged.')}</div>
+    <div class="holds">${WH.holdZones.map(([z, n, d]) => { const hs = WH.held.filter(h => h.zone === z && h.status !== 'gone'); return `<div class="hold hold-${z.toLowerCase()}"><div class="hold-head"><b>Zone ${z} · ${n}</b>${pill(z === 'DMG' ? 'bad' : z === 'RTN' ? 'warn' : 'ok', whHeld(z).length + ' held')}</div><p class="small muted">${d}</p>
+      <div class="list">${hs.map(h => `<div class="item"><div class="top"><b>${h.qty} × ${h.name}</b><span class="small muted">${h.bin}</span></div><span class="small">${h.why}</span><span class="small muted">${h.ref} · ${h.days} day${h.days === 1 ? '' : 's'} in zone${h.cost ? ' · ' + fmt$(h.qty * h.cost) : ''}</span>
+        ${h.status === 'held' ? `<div class="row">${z === 'RTN' ? `<button class="btn sm primary" type="button" data-hold="ship" data-h="${h.id}">Ship back</button>` : z === 'DMG' ? `<button class="btn sm" type="button" data-hold="toreturn" data-h="${h.id}">Move to For return</button><button class="btn sm" type="button" data-hold="repair" data-h="${h.id}">Send for repair</button><button class="btn sm danger" type="button" data-hold="writeoff" data-h="${h.id}">Write off</button>` : `<button class="btn sm primary" type="button" data-hold="restock" data-h="${h.id}">Return to stock</button>`}</div>` : pill('plain', h.status)}</div>`).join('') || '<p class="muted small">Nothing in this zone.</p>'}</div></div>`; }).join('')}</div></section>
   <section class="panel" id="sec-inbound" style="margin-top:16px"><div class="panel-head"><h2>Receiving</h2>${info('Three-way match', 'Receiving records what arrived against the purchase order. When the supplier invoice comes in, PO, receipt and invoice are matched before anyone is paid. A price difference is held for accounts payable.')}</div>
     <div class="table-wrap"><table><thead><tr><th>PO</th><th>Supplier</th><th>Lines</th><th>Expected</th><th>Status</th><th>Invoice match</th><th></th></tr></thead><tbody>
     ${WH.inbound.map((p, i) => `<tr><td><b>${p.po}</b></td><td>${p.supplier}</td><td class="small">${p.lines.map(l => `${l[1]} × ${whItem(l[0])?.name || l[0]}`).join('<br>')}</td><td class="small">${p.eta}</td>
@@ -1002,6 +1069,18 @@ VIEWS.warehouse = () => {
   const V = el('view');
   V.querySelectorAll('[data-jump]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); el('sec-' + a.dataset.jump).scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
   V.querySelectorAll('[data-zone]').forEach(b => b.onclick = () => { WH.zone = b.dataset.zone; VIEWS.warehouse(); el('sec-stock').scrollIntoView({ block: 'start' }); });
+  const HOLD_ACT = {
+    ship: h => ({ title: `Ship ${h.qty} × ${h.name} back?`, ok: 'Ship back', check: 'Packed, labeled with the return authorization, and the paperwork is in the box.', body: `Leaves the warehouse against ${h.ref}. Accounts payable is told to expect the credit.`, done: () => { h.status = 'Shipped · credit pending'; return `${h.name} shipped back. Credit expected against ${h.ref.split(' · ')[0]}.`; } }),
+    toreturn: h => ({ title: `Move ${h.name} to For return?`, ok: 'Move to For return', check: 'Photos of the damage are attached and the supplier or carrier claim is open.', body: 'Moves the item from Damaged to For return so it can go back to the supplier or carrier.', done: () => { h.zone = 'RTN'; h.bin = 'RTN-04'; h.days = 0; return `${h.name} moved to For return (RTN-04).`; } }),
+    repair: h => ({ title: `Send ${h.name} for repair?`, ok: 'Send for repair', check: 'Tagged with the fault and who reported it.', body: 'It leaves the Damaged zone for the repair shop and comes back into Repaired for testing.', done: () => { h.status = 'At the repair shop'; return `${h.name} sent for repair. It will come back to the Repaired zone.`; } }),
+    writeoff: h => ({ title: `Write off ${h.qty} × ${h.name}?`, ok: 'Write off', check: 'A manager approved this write-off, and the item is tagged for disposal or recycling.', body: `Removes it from inventory for good${h.cost ? ` at ${fmt$(h.qty * h.cost)}` : ''}. Refrigerant cylinders go to certified recovery, never the trash.`, done: () => { h.status = 'Written off'; return `${h.name} written off.`; } }),
+    restock: h => ({ title: `Return ${h.qty} × ${h.name} to stock?`, ok: 'Return to stock', check: 'It passed its test and carries a "Repaired" label with the date.', body: `Adds ${h.qty} to ${h.sku} in its normal bin, available for release again.`, done: () => { const w = WH.items.find(i => i.sku === h.sku); if (w) { w.qty += h.qty; w.idle = 0; } h.status = 'Back in stock'; return `${h.name} back in stock${w ? ' (' + w.bin + ')' : ''}.`; } }),
+  };
+  V.querySelectorAll('[data-hold]').forEach(b => b.onclick = () => {
+    const h = WH.held.find(x => x.id === b.dataset.h), a = HOLD_ACT[b.dataset.hold](h);
+    confirmBox({ title: a.title, ok: a.ok, check: a.check, html: `<p class="small">${a.body}</p><p class="small muted" style="margin-top:6px">${h.bin} · ${h.why}</p>`,
+      onOk: () => { toast(a.done()); renderNav(); VIEWS.warehouse(); el('sec-holds').scrollIntoView({ block: 'start' }); } });
+  });
   V.querySelectorAll('[data-release]').forEach(b => b.onclick = () => {
     const v = VANS.find(x => x.id === b.dataset.release), lines = restockFor(v), tech = TECHS.find(t => t.id === v.tech).name;
     const short = lines.filter(({ s, need }) => whItem(s.sku).qty < need);
